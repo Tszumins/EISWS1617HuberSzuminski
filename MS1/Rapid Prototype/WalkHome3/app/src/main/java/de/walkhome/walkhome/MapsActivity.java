@@ -89,7 +89,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
     }
 
-    private void  sendRequest(){
+    private void  sendRequest(){  //startet DirectionFinder und sendet die Start und Zieladresse aus den beiden texteingaben
         String origin = etOrigin.getText().toString();
         String destination = etDestination.getText().toString();
         if(origin.isEmpty()){
@@ -107,7 +107,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
     }
     @Override
-    public void onDirectionFinderStart() {
+    public void onDirectionFinderStart() {    //löscht die bisherigen Maker und Polylines auf der karte
         progressDialog = ProgressDialog.show(this, "Please wait.",
                 "Finding direction..!", true);
 
@@ -131,13 +131,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     @Override
-    public void onDirectionFinderSuccess(List<Route> routes) {
+    public void onDirectionFinderSuccess(List<Route> routes) { //wenn eine Route gefunden wurde wird diese Methode ausgeführt
         progressDialog.dismiss();
         polylinePaths = new ArrayList<>();
         originMarkers = new ArrayList<>();
         destinationMarkers = new ArrayList<>();
 
-
+        //übergibt die Distanz und Dauer der Strecke, verbindet die Punkte auf der Karte mit Polylines
+        //und fügt zwischen den Punkten weitere punkte ein, diese werden in eine Liste gespeichert und nachher zur Berechnung
+        //der Abweichung vom Weg Benutzt
         for (Route route : routes) {
             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(route.startLocation, 16));
             ((TextView) findViewById(R.id.tvDuration)).setText(route.duration.text);
@@ -205,14 +207,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public void onPause() {
         super.onPause();
 
-        //stop location updates when Activity is no longer active
+        //stoppt die LocaionUpdates wenn die Activity nicht mehr aktiv ist
         if (mGoogleApiClient != null) {
             LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
         }
     }
     @Override
-    public void onMapReady(GoogleMap map) {
-
+    public void onMapReady(GoogleMap map) { //wenn die Karte geladen ist, wird die android version geprüft und im zweifel nach permissions gefragt
+                                            // danach wird die GPS- Lokation aktiviert.
         mMap = map;
 
 
@@ -244,24 +246,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 android.Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
 
-            // Should we show an explanation?
             if (ActivityCompat.shouldShowRequestPermissionRationale(this,
                     android.Manifest.permission.ACCESS_FINE_LOCATION)) {
 
-                //TODO:
-                // Show an expanation to the user *asynchronously* -- don't block
-                // this thread waiting for the user's response! After the user
-                // sees the explanation, try again to request the permission.
-
-                //Prompt the user once explanation has been shown
-                //(just doing it here for now, note that with this code, no explanation is shown)
                 ActivityCompat.requestPermissions(this,
                         new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
                         MY_PERMISSIONS_REQUEST_LOCATION);
 
 
             } else {
-                // No explanation needed, we can request the permission.
+
                 ActivityCompat.requestPermissions(this,
                         new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
                         MY_PERMISSIONS_REQUEST_LOCATION);
@@ -285,6 +279,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
     }
 
+    //berechnet die entfernung zwischen zwei latlng punkten
     public int entfernungBerechnen(double lat1, double lon1, double lat2, double lon2){
         double radius = 6378.137; //Erdradius
         double dLat = lat2 * Math.PI / 180 - lat1 * Math.PI / 180;
@@ -310,7 +305,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
 
-
+    // wenn der standort aktualiesiert wird, wird die map neu zentriert und der marker für den standort aktualisiert
+    // wenn das handy 10 mal hintereinander nicht den standort wechselt, wird der nutzer gefragt ob alles in ordnung ist
+    // dies wird noch nur in die texteingabe geschrieben, bei der fertigen app soll ein post auf den Dienstnutzer stattfinden
+    // wenn eine Route vorliegt wird die abweichung von der Route berechnet
     @Override
     public void onLocationChanged(Location location) {
         if(mLastLocation != null) {
@@ -386,10 +384,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         }
 
-
-
-
-        //stop location updates
+        //location updates werden gestoppt
         /*if (mGoogleApiClient != null) {
             LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
         }*/
@@ -399,12 +394,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                            String permissions[], int[] grantResults) {
         switch (requestCode) {
             case MY_PERMISSIONS_REQUEST_LOCATION: {
-                // If request is cancelled, the result arrays are empty.
+
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
 
-                    // permission was granted, yay! Do the
-                    // location-related task you need to do.
+                    // permission
                     if (ContextCompat.checkSelfPermission(this,
                             android.Manifest.permission.ACCESS_FINE_LOCATION)
                             == PackageManager.PERMISSION_GRANTED) {
@@ -417,15 +411,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                 } else {
 
-                    // permission denied, boo! Disable the
-                    // functionality that depends on this permission.
+                    //keine Permission
                     Toast.makeText(this, "permission denied", Toast.LENGTH_LONG).show();
                 }
                 return;
             }
 
-            // other 'case' lines to check for other
-            // permissions this app might request
+
         }
     }
 }
