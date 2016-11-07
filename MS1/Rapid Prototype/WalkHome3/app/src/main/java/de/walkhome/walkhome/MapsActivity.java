@@ -180,7 +180,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                 double distancelon = dlon [i] - dlon[i+1];
 
-                double distance = Math.sqrt((distancelat*distancelat)+(distancelon*distancelon));
+                //double distance = Math.sqrt((distancelat*distancelat)+(distancelon*distancelon));
 
                 Location a = new Location("");
                 a.setLatitude(dlat[i]);
@@ -189,15 +189,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
 
 
-                for(int j = 1; j <= distance;j++){
                     Location b = new Location("");
-                    double latpoint = dlat[i]+((distancelat/distance)*j);
-                    double lonpoint = dlon[i]+((distancelon/distance)*j);
+                    double latpoint = (dlat[i]+ dlat[i+1])/2;
+                    double lonpoint = (dlon[i]+ dlon[i+1])/2;
                     b.setLatitude(latpoint);
                     b.setLongitude(lonpoint);
                     allpoints.add(b);
-                }
+
             }
+            
 
             polylinePaths.add(mMap.addPolyline(polylineOptions));
         }
@@ -315,10 +315,25 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             int oldnewdistance = entfernungBerechnen(location.getLatitude(), location.getLongitude(), mLastLocation.getLatitude(), mLastLocation.getLongitude());
             if (oldnewdistance < 10) {
                 counterSameDistance++;
-                if (counterSameDistance == 10) {
-                    etOrigin.append("Ist alles in Ordnung?");
-                    counterSameDistance = 0;
+                if (counterSameDistance == 7) {
+                    new AlertDialog.Builder(MapsActivity.this)
+                            .setTitle("Nachfrage")
+                            .setMessage("Ist alles in Ordnung?")
+                            .setPositiveButton("Ja", new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int which) {
+                                    counterSameDistance = 8;
+                                }
+                            })
+                            .setNegativeButton("Nein", new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int which) {
+                                    //sende Alarm an Notfallkontakte
+                                }
+                            })
+                            .setIcon(android.R.drawable.ic_dialog_alert)
+                            .show();
                 }
+            }else{
+                counterSameDistance = 0;
             }
         }
         mLastLocation = location;
@@ -352,28 +367,31 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 if (distanz < 100) {
 
                     counter1 = 0;
+                    counterAbweichung = 0;
                     break;
                 } else {
                     counter1++;
                     if (counter1 == allpoints.size()) {
 
                         counterAbweichung++;
-                        new AlertDialog.Builder(MapsActivity.this)
-                                .setTitle("Nachfrage")
-                                .setMessage("Ist alles in Ordnung?")
-                                .setPositiveButton("Ja", new DialogInterface.OnClickListener() {
-                                    public void onClick(DialogInterface dialog, int which) {
-                                       counterAbweichung = 0;
-                                    }
-                                })
-                                .setNegativeButton("Nein", new DialogInterface.OnClickListener() {
-                                    public void onClick(DialogInterface dialog, int which) {
-                                        //sende Alarm an Notfallkontakte
-                                    }
-                                })
-                                .setIcon(android.R.drawable.ic_dialog_alert)
-                                .show();
-                        if(counterAbweichung == 10){
+                        if(counterAbweichung == 2) { //wenn die position 2 mal nicht auf der route war wird eine Abfrage an den User ausgelöst
+                            new AlertDialog.Builder(MapsActivity.this)
+                                    .setTitle("Nachfrage")
+                                    .setMessage("Ist alles in Ordnung?")
+                                    .setPositiveButton("Ja", new DialogInterface.OnClickListener() {
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            counterAbweichung = 11; //wenn der Nutzer sagt dass alles okay ist, wird der counter auf 11 gesetzt und erst wieder auf 0 wenn der User wieder auf der strecke ist
+                                        }
+                                    })
+                                    .setNegativeButton("Nein", new DialogInterface.OnClickListener() {
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            //sende Alarm an Notfallkontakte
+                                        }
+                                    })
+                                    .setIcon(android.R.drawable.ic_dialog_alert)
+                                    .show();
+                        }
+                        if(counterAbweichung == 10){ //wenn der Counter auf 10 steigt wird ein notfall ausgelöst, da der Nutzer nicht mit "JA" geantwortet hat
                             //sende Alarm an Nofallkontakte
                         }
                         counter1 = 0;
