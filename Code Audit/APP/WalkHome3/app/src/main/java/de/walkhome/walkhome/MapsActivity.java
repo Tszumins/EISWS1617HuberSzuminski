@@ -1,14 +1,19 @@
 package de.walkhome.walkhome;
 
 import android.app.ProgressDialog;
+import android.app.Service;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Location;
 import android.media.AudioManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
@@ -20,6 +25,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
+import de.walkhome.walkhome.LocationService.LocalBinder;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.location.LocationListener;
@@ -52,6 +58,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     Marker mCurrLocationMarker;
     Button btnFindPath;
     Button btnSettings;
+    Button btnContacts;
 
     EditText etDestination;
     private List<Marker> originMarkers = new ArrayList<>();
@@ -65,6 +72,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     int counterSameDistance = 0;
     int counterAbweichung = 0;
     AudioManager audioManager;
+    boolean isBound = false;
+    LocationService lS;
 
 
     @Override
@@ -74,9 +83,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
-        btnFindPath = (Button) findViewById(R.id.button1);
-        btnSettings = (Button) findViewById(R.id.buttonSettings);
-        etDestination = (EditText) findViewById(R.id.textedit2);
+        btnFindPath = (Button) findViewById(R.id.buttonRoute);
+        btnSettings = (Button) findViewById(R.id.buttonEinstellungen);
+        etDestination = (EditText) findViewById(R.id.texteditZiel);
+        btnContacts = (Button) findViewById(R.id.buttonKontakte);
 
 
         btnSettings.setOnClickListener(new View.OnClickListener(){
@@ -86,8 +96,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 Intent intent = new Intent(MapsActivity.this, UserSettings.class);
 
                 startActivity(intent);
+            }
+        });
+        btnContacts.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v){
 
+                Intent intent = new Intent(MapsActivity.this, Contacts.class);
 
+                startActivity(intent);
             }
         });
 
@@ -100,9 +117,22 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             checkLocationPermission();
         }
+
+        Intent intent1 = new Intent(this,LocationService.class);
+
+        bindService(intent1 , serviceConnection, Context.BIND_AUTO_CREATE);
+
+
+
+
+
+
     }
 
+
+
     private void  sendRequest() {  //startet DirectionFinder und sendet die Start und Zieladresse aus den beiden texteingaben
+
         if (mLastLocation != null) {
             String origin = mLastLocation.getLatitude() + "," + mLastLocation.getLongitude();
 
@@ -156,13 +186,19 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         originMarkers = new ArrayList<>();
         destinationMarkers = new ArrayList<>();
 
+
+        lS.route2 = routes;
+        lS.isActivated = true;
+
+
+
         //übergibt die Distanz und Dauer der Strecke, verbindet die Punkte auf der Karte mit Polylines
         //und fügt zwischen den Punkten weitere punkte ein, diese werden in eine Liste gespeichert und nachher zur Berechnung
         //der Abweichung vom Weg Benutzt
         for (Route route : routes) {
             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(route.startLocation, 16));
-            ((TextView) findViewById(R.id.tvDuration)).setText(route.duration.text);
-            ((TextView) findViewById(R.id.tvDistance)).setText(route.distance.text);
+            ((TextView) findViewById(R.id.textviewDauer)).setText(route.duration.text);
+            ((TextView) findViewById(R.id.textviewDistanz)).setText(route.distance.text);
 
             originMarkers.add(mMap.addMarker(new MarkerOptions()
                     .title(route.startAddress)
@@ -175,6 +211,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     geodesic(true).
                     color(Color.BLUE).
                     width(10);
+
+
 
             for (int i = 0; i < route.points.size(); i++){
                 polylineOptions.add(route.points.get(i));
@@ -249,6 +287,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             buildGoogleApiClient();
             mMap.setMyLocationEnabled(true);
         }
+
     }
     protected synchronized void buildGoogleApiClient() {
         mGoogleApiClient = new GoogleApiClient.Builder(this)
@@ -296,6 +335,46 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 == PackageManager.PERMISSION_GRANTED) {
             LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
         }
+
+          try {
+
+              if(lS.isActivated == true) {
+
+
+
+                  polylinePaths = new ArrayList<>();
+                  originMarkers = new ArrayList<>();
+                  destinationMarkers = new ArrayList<>();
+
+                  for (Route route : lS.route2) {
+
+
+
+                      mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(route.startLocation, 16));
+                      originMarkers.add(mMap.addMarker(new MarkerOptions()
+                              .title(route.startAddress)
+                              .position(route.startLocation)));
+                      destinationMarkers.add(mMap.addMarker(new MarkerOptions()
+                              .title(route.endAddress)
+                              .position(route.endLocation)));
+
+                      PolylineOptions polylineOptions = new PolylineOptions().
+                              geodesic(true).
+                              color(Color.BLUE).
+                              width(10);
+                      for (int i = 0; i < route.points.size(); i++){
+                          polylineOptions.add(route.points.get(i));
+
+                      }
+
+                      polylinePaths.add(mMap.addPolyline(polylineOptions));
+                  }
+
+              }
+        }catch (Exception e){
+            etDestination.append(e.toString());
+        }
+
     }
 
     //berechnet die entfernung zwischen zwei latlng punkten
@@ -330,6 +409,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     // wenn eine Route vorliegt wird die abweichung von der Route berechnet
     @Override
     public void onLocationChanged(Location location) {
+
 
         if(mLastLocation != null) {
 
@@ -462,5 +542,21 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         }
     }
+    private ServiceConnection serviceConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder iBinder) {
+            LocalBinder binder = (LocalBinder) iBinder;
+            lS = binder.getService();
+            isBound = true;
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            isBound = false;
+
+        }
+    };
+
+
 }
 
