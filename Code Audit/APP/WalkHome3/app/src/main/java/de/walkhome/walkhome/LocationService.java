@@ -24,6 +24,7 @@ public class LocationService extends Service  {
     private final IBinder iBinder = new LocalBinder();
     List<Route> route2;
     public Boolean isActivated = false;
+    public String contactName;
 
 
     public class LocalBinder extends Binder {

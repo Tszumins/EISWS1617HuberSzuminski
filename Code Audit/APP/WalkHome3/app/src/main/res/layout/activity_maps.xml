@@ -127,7 +127,7 @@
             android:layout_weight="0.3" />
 
         <Button
-            android:text="Button"
+            android:text="Angekommen"
             android:layout_width="0dp"
             android:layout_height="match_parent"
 

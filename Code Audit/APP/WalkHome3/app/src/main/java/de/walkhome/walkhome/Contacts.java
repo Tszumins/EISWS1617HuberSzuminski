@@ -9,7 +9,9 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
@@ -23,6 +25,7 @@ public class Contacts extends Activity {
     private ArrayList<Button> contactBuuttons;
     LocationService lS;
     Boolean isBound = false;
+    EditText sUser;
 
 
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,6 +33,7 @@ public class Contacts extends Activity {
         setContentView(R.layout.activity_contacts);
         btnZurueck = (Button) findViewById(R.id.buttonZurueck);
         contactBuuttons = new ArrayList<Button>();
+        sUser = (EditText) findViewById(R.id.searchUser);
 
         btnZurueck.setOnClickListener(new View.OnClickListener(){
             @Override
@@ -42,7 +46,17 @@ public class Contacts extends Activity {
         LinearLayout ll = (LinearLayout)findViewById(R.id.contactButton);
 
         for(int i=0; i<contactBuuttons.size();i++) {
-            contactBuuttons.get(i).setText("Kontakt");
+            contactBuuttons.get(i).setText("Kontakt"+ i);
+            final int finalI = i;
+            contactBuuttons.get(i).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    lS.contactName = "Kontakt" + finalI;
+                    Intent intent = new Intent(Contacts.this,ContactStatus.class);
+                    startActivity(intent);
+
+                }
+            });
             ll.addView(contactBuuttons.get(i));
         }
 

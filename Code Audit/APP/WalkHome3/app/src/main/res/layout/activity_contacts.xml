@@ -43,7 +43,7 @@
             android:inputType="textPersonName"
             android:text="Name"
 
-            android:id="@+id/editText2"
+            android:id="@+id/searchUser"
             android:textAlignment="center" />
 
         <LinearLayout

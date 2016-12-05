@@ -60,6 +60,7 @@
                 <category android:name="android.intent.category.ALTERNATIVE" />
             </intent-filter>
         </activity>
+        <activity android:name=".ContactStatus"></activity>
         <service android:name=".LocationService" ></service>
     </application>
 
