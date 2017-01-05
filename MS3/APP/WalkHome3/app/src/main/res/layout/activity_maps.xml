@@ -1,0 +1,305 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".MapsActivity"
+    android:background="#eeeeee">
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="0.1"
+        android:background="#dddddd">
+
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="0px"
+            android:layout_height="match_parent"
+            android:layout_weight="0.25">
+
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.1" />
+
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="0px"
+                android:layout_weight="0.8">
+
+                <Space
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0.2" />
+
+                <Button
+                    android:layout_width="0px"
+                    android:layout_height="match_parent"
+                    android:id="@+id/buttonEinstellungen"
+
+                    android:textSize="12sp"
+                    android:layout_weight="0.8"
+                    android:background="@drawable/ic_einstellungen" />
+
+                <Space
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0.2" />
+            </LinearLayout>
+
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.1" />
+        </LinearLayout>
+
+        <Button
+            android:text="Angekommen"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+
+            android:id="@+id/buttonAngekommen"
+            android:textSize="12sp"
+            android:layout_weight="0.5"
+            android:background="#3be852"
+            android:duplicateParentState="true"
+            android:padding="5px"
+            android:drawableTop="@drawable/ic_angekommen"
+            android:textColor="#222222" />
+
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="0px"
+            android:layout_height="match_parent"
+            android:layout_weight="0.25">
+
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.1" />
+
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="0px"
+                android:layout_weight="0.8">
+
+                <Space
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0.2" />
+
+                <Button
+                    android:layout_width="0px"
+                    android:layout_height="match_parent"
+
+                    android:id="@+id/buttonKontakte"
+
+                    android:textSize="12sp"
+                    android:layout_weight="0.8"
+                    android:background="@drawable/ic_kontakte" />
+
+                <Space
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0.2" />
+            </LinearLayout>
+
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.1" />
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="0.03">
+
+        <TextView
+            android:layout_marginLeft="5dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="0 km"
+
+            android:id="@+id/textviewDistanz"
+            android:layout_weight="0.5" />
+
+        <TextView
+            android:layout_marginLeft="5dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="0 min"
+            android:id="@+id/textviewDauer"
+            android:layout_weight="0.5" />
+    </LinearLayout>
+
+    <fragment xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="0.3"
+
+        android:id="@+id/map"
+        tools:context=".MapsActivity"
+        android:name="com.google.android.gms.maps.SupportMapFragment" />
+
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="0.08"
+        android:background="#dddddd">
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="0px"
+            android:layout_height="match_parent"
+            android:layout_weight="0.2">
+
+            <Space
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1" />
+
+            <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1">
+
+                <Space
+                    android:layout_width="match_parent"
+                    android:layout_height="0px"
+                    android:layout_weight="0.05" />
+
+                <ImageView
+                    android:layout_width="match_parent"
+                    android:layout_height="0px"
+                    android:id="@+id/imageView"
+                    android:layout_weight="0.95"
+                    android:background="@drawable/ic_ziel" />
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <EditText
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+
+            android:id="@+id/texteditZiel"
+
+            android:textSize="18sp"
+            android:textAlignment="center"
+            android:layout_weight="0.6"
+            android:textColor="#222222"
+            android:textColorLink="#4eb9ff"
+            android:backgroundTint="#4eb9ff" />
+
+        <Space
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="0.2" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="0.08"
+        android:background="@color/wallet_bright_foreground_holo_dark">
+
+        <Space
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.4" />
+
+        <Button
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:id="@+id/buttonRoute"
+            android:text="Route suchen"
+            android:textSize="12sp"
+            android:layout_weight="0.4"
+            android:backgroundTint="#4eb9ff"
+            android:elevation="15dp"
+            android:textColor="#222222" />
+
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="0px"
+            android:layout_height="match_parent"
+            android:layout_weight="0.2">
+
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="0px"
+                android:layout_weight="0.3"/>
+
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="0px"
+                android:layout_weight="0.4">
+
+                <Space
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0.3" />
+
+                <Button
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/buttonAbbrechen"
+                    android:layout_weight="0.4"
+                    android:background="@drawable/ic_abbruch"
+                    android:visibility="invisible" />
+
+                <Space
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0.3" />
+            </LinearLayout>
+
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="0px"
+                android:layout_weight="0.3" />
+        </LinearLayout>
+
+        <Space
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.2" />
+    </LinearLayout>
+
+    <Button
+        android:text="ALARM"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="5dp"
+        android:id="@+id/buttonAlarm"
+        android:textSize="45sp"
+        android:background="#ff0000"
+        android:layout_weight="0.2"
+        android:paddingLeft="50px"
+        android:paddingRight="50px"
+        android:elevation="11dp"
+        android:drawableTop="@drawable/ic_alarm"
+        android:textColor="#222222" />
+
+    <Space
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="0.02" />
+
+
+</LinearLayout>

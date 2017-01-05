@@ -1,0 +1,80 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".MapsActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="0.01"
+        android:background="@color/cast_expanded_controller_ad_label_background_color">
+
+        <Button
+            android:text="ZURÜCK"
+            android:layout_width="60dp"
+            android:layout_height="30dp"
+            android:layout_margin="4dp"
+
+            android:id="@+id/buttonZurueck"
+            android:background="@color/cast_expanded_controller_background_color"
+            android:textColor="@color/cast_expanded_controller_text_color" />
+
+        <TextView
+
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:id="@+id/header"
+            android:textSize="18sp"
+            android:textAlignment="center"
+            android:elevation="24dp" />
+
+
+    </LinearLayout>
+
+
+
+    <fragment xmlns:android="http://schemas.android.com/apk/res/android"
+xmlns:tools="http://schemas.android.com/tools"
+android:layout_width="match_parent"
+android:layout_height="0dp"
+android:layout_weight="0.3"
+
+android:id="@+id/map"
+tools:context=".MapsActivity"
+android:name="com.google.android.gms.maps.SupportMapFragment" />
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="0px"
+        android:layout_weight="0.4">
+
+        <Button
+            android:text="Button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/btnContactCall"
+            android:layout_weight="0.3"
+            android:background="@color/cast_libraries_material_featurehighlight_outer_highlight_default_color" />
+
+        <TextView
+            android:text="TextView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/textView5"
+            android:layout_weight="0.2"/>
+
+        <Button
+            android:text="Notruf 110"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/button2"
+            android:layout_weight="0.3"
+            android:background="@android:color/holo_red_dark" />
+    </LinearLayout>
+
+
+</LinearLayout>
