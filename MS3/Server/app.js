@@ -3,6 +3,7 @@ var bodyParser = require('body-parser');
 var jsonParser = bodyParser.json();
 var app = express();
 var paperwork = require('paperwork');
+var geocoder = require('geocoder');
 
 
 var jsonuseraccept = {
@@ -13,18 +14,45 @@ var jsonuseraccept = {
     'nachname': String,
     'telefonnummer': Number,
     'status': String,
-    }
+    'currentPLZ': paperwork.optional(Number)
+}
 
-var jsonuserAIDaccept ={
+var jsonputuseraccept = {
+    'username': String,
+    'androidID': String,
+    'fcmID': String,
+    'vorname': String,
+    'nachname': String,
+    'telefonnummer': Number,
+    'status': String,
+    'currentPLZ': paperwork.optional(Number)
+}
+
+var jsonuserAIDaccept = {
     'androidID': String,
     'username': String
 }
 
-var jsoncontactsaccept ={
+var jsoncontactsaccept = {
     'contactname': String,
     'akzeptiert': String
 }
 
+var jsonplaceaccept = {
+    'latitude': Number,
+    'longitude': Number
+}
+
+var jsonplaceuseraccept = {
+    'username': String,
+    'fcmID': String
+}
+
+var jsonuseralarmaccept = {
+    'latitude': paperwork.optional(Number),
+    'longitude': paperwork.optional(Number),
+    'time': String
+}
 
 //Mit Redis Server verbinden
 var redis = require("redis");
@@ -38,18 +66,18 @@ client.on("error", function (err) {
 app.post('/user', jsonParser, paperwork.accept(jsonuseraccept), function (req, res) {
 
     var newUser = req.body; // Body beinhaltet geparstes JSON-Objekt
-    
-     var datasetKey = 'user:' + newUser.username;
-        
+
+    var datasetKey = 'user:' + newUser.username;
+
     client.exists(datasetKey, function (err, rep) {
         if (rep == 1) {
             res.status(400).json("Der Username ist schon vergeben!");
         } else {
-           client.set(datasetKey, JSON.stringify(newUser), function (err, rep) { //user in Datenbank speichern
+            client.set(datasetKey, JSON.stringify(newUser), function (err, rep) { //user in Datenbank speichern
 
-            res.status(200).json(newUser);
-        })
-    
+                res.status(200).json(newUser);
+            })
+
         }
 
     });
@@ -57,7 +85,7 @@ app.post('/user', jsonParser, paperwork.accept(jsonuseraccept), function (req, r
 
 app.get('/user', jsonParser, function (req, res) {
     client.keys('user:*', function (err, rep) {
-        
+
         if (rep.length == 0) {
             res.status(404).json([]);
             return;
@@ -103,7 +131,7 @@ app.delete('/user/:USERNAME', jsonParser, function (req, res) {
 
             client.del(datasetKey, function (err, rep) {
 
-                res.status(200).json('User: ' + username.username +' wurde gelöscht!');
+                res.status(200).json('User: ' + username.username + ' wurde gelöscht!');
             })
         } else {
             res.status(404).json('User existiert nicht!');
@@ -112,15 +140,32 @@ app.delete('/user/:USERNAME', jsonParser, function (req, res) {
     });
 });
 
-app.put('/user/:USERNAME', jsonParser, paperwork.accept(jsonuseraccept), function (req, res) {
-
+app.put('/user/:USERNAME', jsonParser, paperwork.accept(jsonputuseraccept), function (req, res) {
+    var newData = req.body;
     var datasetKey = 'user:' + req.params.USERNAME;
+    var user = "";
+
+    if (newData.currentPLZ != null) {
+        client.get(datasetKey, function (err, rep) {
+            user = JSON.parse(rep);
+            if (user.currentPLZ == newData.currentPLZ) {
+
+            } else {
+                var nDusername = {};
+                nDusername.username = newData.username;
+                nDusername.fcmID = newData.fcmID;
+                client.del('placeuser:' + user.currentPLZ + 'user:' + newData.username, function (err, rep) {});
+
+                client.set('placeuser:' + newData.currentPLZ + 'user:' + newData.username, JSON.stringify(nDusername), function (err, rep) {});
+            }
+        });
+    }
 
     client.exists(datasetKey, function (err, rep) {
 
         if (rep == 1) {
-            var newData = req.body;
-            newData.username = req.params.USERNAME
+
+            newData.username = req.params.USERNAME;
 
             client.set(datasetKey, JSON.stringify(newData), function (err, rep) {
                 res.status(200).json(newData);
@@ -142,17 +187,17 @@ app.put('/user/:USERNAME', jsonParser, paperwork.accept(jsonuseraccept), functio
 app.post('/user/:USERNAME/contact', jsonParser, paperwork.accept(jsoncontactsaccept), function (req, res) {
 
     var newContact = req.body; // Body beinhaltet geparstes JSON-Objekt
-    
-     var datasetKey = 'c:' + req.params.USERNAME + 'contact:' + newContact.contactname;
-        
+
+    var datasetKey = 'c:' + req.params.USERNAME + 'contact:' + newContact.contactname;
+
     client.exists(datasetKey, function (err, rep) {
         if (rep == 1) {
             res.status(400).json("Der User ist schon dein Freund!");
         } else {
-           client.set(datasetKey, JSON.stringify(newContact), function (err, rep) { //user in Datenbank speichern
+            client.set(datasetKey, JSON.stringify(newContact), function (err, rep) { //user in Datenbank speichern
 
-            res.status(200).json(newContact);
-        })
+                res.status(200).json(newContact);
+            })
         }
     });
 });
@@ -173,7 +218,7 @@ app.get('/user/:USERNAME/contact/:CONTACTNAME', jsonParser, function (req, res) 
 
 app.get('/user/:USERNAME/contact', jsonParser, function (req, res) {
     client.keys('c:' + req.params.USERNAME + 'contact:*', function (err, rep) {
-        
+
         if (rep.length == 0) {
             res.status(404).json([]);
             return;
@@ -204,7 +249,7 @@ app.delete('/user/:USERNAME/contact/:CONTACTNAME', jsonParser, function (req, re
 
             client.del(datasetKey, function (err, rep) {
 
-                res.status(200).json('Kontakt: ' + contactname.contactname +' wurde gelöscht!');
+                res.status(200).json('Kontakt: ' + contactname.contactname + ' wurde gelöscht!');
             })
         } else {
             res.status(404).json('User existiert nicht!');
@@ -213,31 +258,99 @@ app.delete('/user/:USERNAME/contact/:CONTACTNAME', jsonParser, function (req, re
     });
 });
 
+app.post('/user/:USERNAME/alarm', jsonParser, paperwork.accept(jsonuseralarmaccept), function (req, res) {
+
+    var newAlarm = req.body; // Body beinhaltet geparstes JSON-Objekt
+        newAlarm.username = req.params.USERNAME;
+    var datasetKey = 'u:' + req.params.USERNAME + 'alarm:';
+
+    client.exists(datasetKey, function (err, rep) {
+        if (rep == 1) {
+            res.status(400).json("Der User hat den Alarm schon ausgelöst!");
+        } else {
+            client.set(datasetKey, JSON.stringify(newAlarm), function (err, rep) { //user in Datenbank speichern
+
+                res.status(200).json(newAlarm);
+            })
+        }
+    });
+});
 
 
+app.put('/user/:USERNAME/alarm', jsonParser, paperwork.accept(jsonuseralarmaccept), function (req, res) {
+    var newData = req.body;
+    var datasetKey = 'u:' + req.params.USERNAME + 'alarm:';
+    
+    client.exists(datasetKey, function (err, rep) {
+
+        if (rep == 1) {
+
+            newData.username = req.params.USERNAME;
+
+            client.set(datasetKey, JSON.stringify(newData), function (err, rep) {
+                res.status(200).json(newData);
+            });
+        } else {
+            res.status(404).json('Alarm wurde nicht angelegt!');
+        }
+    })
+});
+
+app.get('/user/:USERNAME/alarm', jsonParser, function (req, res) {
+    var datasetKey = 'u:' + req.params.USERNAME + 'alarm:';
+
+    client.get(datasetKey, function (err, rep) {
+
+        if (rep) {
+            res.status(200).type('json').send(rep); //liegt schon in Json vor
+        } else {
+            res.status(404).type('text').send('Der User hat keinen Alarm ausgelöst!');
+        }
+    });
+});
+
+
+app.delete('/user/:USERNAME/alarm', jsonParser, function (req, res) {
+    var datasetKey = 'u:' + req.params.USERNAME + 'alarm:';
+
+    client.exists(datasetKey, function (err, rep) {
+        if (rep == 1) {
+            var username;
+
+            client.get(datasetKey, function (err, rep) {
+                username = JSON.parse(rep);
+            });
+
+            client.del(datasetKey, function (err, rep) {
+
+                res.status(200).json('Der Alarm wurde gelöscht!');
+            })
+        } else {
+            res.status(404).json('Es wurde kein Alarm ausgelöst!');
+        }
+
+    });
+});
 //UserAndroidIDs werden gespeichert, um zu überprüfen, ob das Smartphone schon registriert wurde. 
 //---------------------------------------------------------------------------------------------//
 //---------------------------------------------------------------------------------------------//
 //---------------------------------------------------------------------------------------------//
 
 
+app.post('/userAID', jsonParser, paperwork.accept(jsonuserAIDaccept), function (req, res) {
 
-
-
-app.post('/userAID', jsonParser, paperwork.accept(jsonuserAIDaccept), function(req,res){
-    
     var newUser = req.body; // Body beinhaltet geparstes JSON-Objekt
-    
-     var datasetKey = 'userAID:' + newUser.androidID;
-        
+
+    var datasetKey = 'userAID:' + newUser.androidID;
+
     client.exists(datasetKey, function (err, rep) {
         if (rep == 1) {
             res.status(400).json("Das Smartphone ist schon registriert!");
         } else {
-           client.set(datasetKey, JSON.stringify(newUser), function (err, rep) { //user in Datenbank speichern
+            client.set(datasetKey, JSON.stringify(newUser), function (err, rep) { //user in Datenbank speichern
 
-            res.status(200).json(newUser);
-        })
+                res.status(200).json(newUser);
+            })
         }
     });
 });
@@ -269,7 +382,7 @@ app.delete('/userAID/:AID', jsonParser, function (req, res) {
 
             client.del(datasetKey, function (err, rep) {
 
-                res.status(200).json('Die AndroidID des Users: ' + username.username +' wurde gelöscht!');
+                res.status(200).json('Die AndroidID des Users: ' + username.username + ' wurde gelöscht!');
             })
         } else {
             res.status(404).json('Das Smartphone wurde noch nicht registriert!');
@@ -278,9 +391,10 @@ app.delete('/userAID/:AID', jsonParser, function (req, res) {
     });
 });
 
+
 app.get('/userAID', jsonParser, function (req, res) {
     client.keys('userAID:*', function (err, rep) {
-        
+
         if (rep.length == 0) {
             res.status(404).json([]);
             return;
@@ -298,6 +412,118 @@ app.get('/userAID', jsonParser, function (req, res) {
     })
 });
 
+//Ortsgruppen werden erstellt, um Personen im Umfeld im Notfall kontaktieren zu können
+//---------------------------------------------------------------------------------------------//
+//---------------------------------------------------------------------------------------------//
+//---------------------------------------------------------------------------------------------//
+
+app.post('/place', jsonParser, paperwork.accept(jsonplaceaccept), function (req, res) {
+
+    var newPlace = req.body; // Body beinhaltet geparstes JSON-Objekt
+
+    geocoder.reverseGeocode(newPlace.latitude, newPlace.longitude, function (err, data) {
+        var address = data.results[0].formatted_address;
+        var ad = "";
+        var placename = "";
+        var count = 0;
+        var countkomma = 0;
+        //Adress nach Postleitzahl filtern 
+        for (var i = 0; i < address.length; i++) {
+            if (count >= 2 && count < 7) {
+                ad = ad + address[i];
+                count++;
+            }
+            if (count == 1) {
+                count++;
+            }
+            if (address[i] == ",") {
+                count++;
+                countkomma++;
+            }
+            if (countkomma == 2) {
+                break;
+            }
+            if (count >= 9) {
+                placename = placename + address[i];
+                count++;
+            }
+            if (count >= 7 && count < 9) {
+                count++;
+            }
+        }
+        var datasetKey = 'place:' + ad;
+        newPlace.plz = ad;
+        newPlace.placename = placename;
+        client.exists(datasetKey, function (err, rep) {
+            if (rep == 1) {
+                res.status(400).json(newPlace);
+            } else {
+                client.set(datasetKey, JSON.stringify(newPlace), function (err, rep) { //user in Datenbank speichern
+
+                    res.status(200).json(newPlace);
+                });
+            }
+        });
+    });
+});
+
+app.get('/place', jsonParser, function (req, res) {
+    client.keys('place:*', function (err, rep) {
+
+        if (rep.length == 0) {
+            res.status(404).json([]);
+            return;
+        } else {
+            var places = [];
+            client.mget(rep, function (err, rep) {
+                rep.forEach(function (val) {
+                    if (val != null) {
+                        places.push(JSON.parse(val));
+                    }
+                });
+                res.status(200).json(places);
+            })
+        }
+    })
+});
+
+app.post('/place/:PLZ/user', jsonParser, paperwork.accept(jsonplaceuseraccept), function (req, res) {
+
+    var newUser = req.body; // Body beinhaltet geparstes JSON-Objekt
+
+    var datasetKey = 'placeuser:' + req.params.PLZ + 'user:' + newUser.username;
+
+    client.exists(datasetKey, function (err, rep) {
+        if (rep == 1) {
+            res.status(400).json("Der User ist schon in dem Ort eingetragen!");
+        } else {
+            client.set(datasetKey, JSON.stringify(newUser), function (err, rep) { //user in Datenbank speichern
+
+                res.status(200).json(newUser);
+            })
+        }
+    });
+});
+
+app.get('/place/:PLZ/user', jsonParser, function (req, res) {
+    client.keys('placeuser:'+req.params.PLZ+'user:*', function (err, rep) {
+
+        if (rep.length == 0) {
+            res.status(404).json([]);
+            return;
+        } else {
+            var places = [];
+            client.mget(rep, function (err, rep) {
+                rep.forEach(function (val) {
+                    if (val != null) {
+                        places.push(JSON.parse(val));
+                    }
+                });
+                res.status(200).json(places);
+            })
+        }
+    })
+});
 
 
 app.listen(1234);
