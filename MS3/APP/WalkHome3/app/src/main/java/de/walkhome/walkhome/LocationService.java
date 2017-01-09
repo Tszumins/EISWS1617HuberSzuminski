@@ -1,14 +1,14 @@
 package de.walkhome.walkhome;
 
-import android.app.Activity;
-import android.app.Dialog;
 import android.app.Service;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationManager;
+import android.media.AudioManager;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -19,7 +19,6 @@ import android.support.v7.view.ContextThemeWrapper;
 import android.util.Log;
 import android.view.WindowManager;
 import android.widget.Toast;
-
 
 import com.google.android.gms.maps.model.LatLng;
 
@@ -36,6 +35,9 @@ public class LocationService extends Service  {
     List<Location> allpoints = new ArrayList<>();
     public Boolean isActivated = false;
     public String contactName;
+
+    public static final String MyPREFERENCES = "WalkHomeSettings" ;
+    public static final String headphoneEnable = "headphoneEnable";
 
 
     int counterSameDistance = 0;
@@ -60,6 +62,21 @@ public class LocationService extends Service  {
         @Override
         public void onLocationChanged(Location location) {
             Log.e(TAG, "onLocationChanged: " + location);
+
+            //SharedPrefe Laden um die Einstellungen zu überprüfen.
+            SharedPreferences sharedpreferences = getSharedPreferences(MyPREFERENCES, Context.MODE_PRIVATE);
+
+            //Mit isWiredHeadsetOn wird abgefragt ob das Headset angeschlossen ist.
+            //Einstellung kann erst Aktiviert werden wenn Kopfhörer angeschlossen sind.
+            if(sharedpreferences.getBoolean(headphoneEnable, true)){
+                AudioManager scanHeadphoneJack = (AudioManager)getSystemService(Context.AUDIO_SERVICE);
+                if (scanHeadphoneJack.isWiredHeadsetOn()){
+                    Toast.makeText(getApplicationContext(), "Alles in Ordnung hier!", Toast.LENGTH_SHORT).show();
+                }
+                else{
+                    Toast.makeText(getApplicationContext(), "Alarm senden", Toast.LENGTH_SHORT).show();
+                }
+            }
 
             if(mLastLocation != null) {
 
