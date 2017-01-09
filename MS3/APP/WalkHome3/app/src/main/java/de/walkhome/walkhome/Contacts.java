@@ -1,20 +1,28 @@
 package de.walkhome.walkhome;
 
 import android.app.Activity;
+import android.app.ExpandableListActivity;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.provider.Settings;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
-import android.widget.TextView;
-import android.widget.Toast;
 
+import java.io.IOException;
 import java.util.ArrayList;
+
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 
 /**
  * Created by yannikhuber on 21.11.16.
@@ -26,6 +34,10 @@ public class Contacts extends Activity {
     LocationService lS;
     Boolean isBound = false;
     EditText sUser;
+
+
+    public static final MediaType JSON
+            = MediaType.parse("application/json; charset=utf-8");
 
 
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,6 +54,8 @@ public class Contacts extends Activity {
                 startActivity(intent);
             }
         });
+
+
         createButton(10);
         LinearLayout ll = (LinearLayout)findViewById(R.id.contactButton);
 
@@ -69,8 +83,9 @@ public class Contacts extends Activity {
         Intent intent = new Intent(this, LocationService.class);
         bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
 
-
     }
+
+
 
     @Override
     protected void onStop() {
@@ -104,4 +119,7 @@ public class Contacts extends Activity {
             contactBuuttons.add(new Button(this));
         }
     }
+
+
+
 }

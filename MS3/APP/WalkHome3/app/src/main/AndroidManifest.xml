@@ -68,11 +68,7 @@
         <activity android:name=".ContactStatus"></activity>
         <service android:name=".LocationService"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar"></service>
-
-        <activity android:name=".AlertActivity"
-            android:theme="@android:style/Theme.Dialog">
-
-        </activity>
+        <activity android:name=".Registrieren"></activity>
     </application>
 
 

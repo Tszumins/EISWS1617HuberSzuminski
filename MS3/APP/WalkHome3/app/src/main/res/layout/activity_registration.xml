@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#eeeeee">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0px"
+        android:layout_weight="0.085"
+        android:background="@color/cast_expanded_controller_ad_label_background_color">
+
+        <Button
+            android:text="ZURÜCK"
+            android:layout_width="60dp"
+            android:layout_height="30dp"
+            android:layout_margin="4dp"
+
+            android:id="@+id/btnzuruck"
+            android:background="#222222"
+            android:textColor="#eeeeee" />
+
+        <TextView
+            android:text="Registrierung"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:id="@+id/headerEinstellungen"
+            android:textSize="22sp"
+            android:textAlignment="center"
+            android:elevation="24dp"
+            android:textColor="#222222"
+            android:textStyle="normal|bold" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="0px"
+        android:layout_weight="0.9">
+
+        <Space
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="0.2" />
+
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="0.6">
+
+            <TextView
+                android:text="Nutzername"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/textView4"
+                android:textSize="20sp"
+                android:background="#3be852"
+                android:textStyle="normal|bold"
+                android:textColor="#222222" />
+
+            <EditText
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textPersonName"
+                android:ems="10"
+                android:id="@+id/editText_username"
+                android:hint="Nutzername" />
+
+            <TextView
+                android:text="Vorname"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/textView6"
+                android:textSize="20sp"
+                android:background="#E88C0C"
+                android:textStyle="normal|bold"
+                android:textColor="#222222" />
+
+            <EditText
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textPersonName"
+                android:ems="10"
+                android:id="@+id/editText_vorname"
+                android:hint="Vorname" />
+
+            <TextView
+                android:text="Nachname"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/textView8"
+                android:textSize="20sp"
+                android:background="#FFFB0D"
+                android:textStyle="normal|bold"
+                android:textColor="#222222" />
+
+            <EditText
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textPersonName"
+                android:ems="10"
+                android:id="@+id/editText_name"
+                android:hint="Name" />
+
+            <TextView
+                android:text="Telefonnummer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/textView9"
+                android:textSize="20sp"
+                android:background="#4EB9FF"
+                android:textStyle="normal|bold"
+                android:textColor="#222222" />
+
+            <EditText
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textPersonName"
+                android:ems="10"
+                android:id="@+id/editText_telefon"
+                android:hint="Tel. Nummer" />
+
+            <Button
+                android:text="registrieren"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/button_absenden"
+                android:background="#dddddd"
+                android:textColor="#222222" />
+
+        </LinearLayout>
+
+        <Space
+            android:layout_width="0px"
+            android:layout_height="match_parent"
+            android:layout_weight="0.2" />
+
+    </LinearLayout>
+
+</LinearLayout>

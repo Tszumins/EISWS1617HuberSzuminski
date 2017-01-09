@@ -11,9 +11,11 @@ import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.location.Location;
 import android.media.AudioManager;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
@@ -25,6 +27,9 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 import de.walkhome.walkhome.LocationService.LocalBinder;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.location.LocationListener;
@@ -44,6 +49,7 @@ import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
@@ -170,6 +176,17 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         Intent intent1 = new Intent(this,LocationService.class);
 
         bindService(intent1 , serviceConnection, Context.BIND_AUTO_CREATE);
+
+        try {
+            String androidID = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
+            //HttpRestPost restp = new HttpRestPost();
+            //restp.execute("http://5.199.129.74:81/userAID/" + androidID,"{\"androidID\":\""+ androidID +"\",\"username\":\"hallowelt\"}", "put");
+            //restp.execute("http://5.199.129.74:81/userAID/" + androidID,"{\"androidID\":\""+ androidID +"\"}", "post");
+            HttpRestGet restg = new HttpRestGet();
+            restg.execute("http://5.199.129.74:81/userAID/" + androidID);
+        }catch(Exception e ){
+            Toast.makeText(this,"FEHLER!",Toast.LENGTH_SHORT);
+        }
 
     }
 
@@ -620,6 +637,50 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
     };
 
+
+    public class HttpRestGet  extends AsyncTask<String, Void, String> {
+
+        OkHttpClient client = new OkHttpClient();
+        String abcde;
+
+        String run(String url) throws IOException {
+            Request request = new Request.Builder()
+                    .url(url)
+                    .build();
+
+            Response response = client.newCall(request).execute();
+            return response.body().string();
+        }
+
+        @Override
+        protected String doInBackground(String... params) {
+            try {
+                abcde = run(params[0]);
+
+            } catch (Exception e) {
+                abcde = e.toString();
+            }
+
+            return abcde;
+        }
+
+        @Override
+        protected void onPostExecute(String res) {
+            onResponse(res);
+
+        }
+    }
+
+    void onResponse (String response){
+
+        if(response.contains("Das Smartphone wurde noch nicht registriert!")){
+            try{
+                Intent intent1 = new Intent(MapsActivity.this, Registrieren.class);
+                startActivity(intent1);}catch(Exception e ){
+                etDestination.append(e.toString());
+            }
+        }
+    }
 
 }
 

@@ -30,7 +30,7 @@ var jsonputuseraccept = {
 
 var jsonuserAIDaccept = {
     'androidID': String,
-    'username': String
+    'username': paperwork.optional(String)
 }
 
 var jsoncontactsaccept = {
@@ -345,17 +345,41 @@ app.post('/userAID', jsonParser, paperwork.accept(jsonuserAIDaccept), function (
 
     client.exists(datasetKey, function (err, rep) {
         if (rep == 1) {
-            res.status(400).json("Das Smartphone ist schon registriert!");
+            client.get(datasetKey, function(err, rep){
+                var datajson = JSON.parse(rep);
+                var responeURL = "http://5.199.129.74:81/user/" + datajson.username;
+                
+                res.status(400).json({"status":400,"url": responeURL});
+            })
+            
         } else {
             client.set(datasetKey, JSON.stringify(newUser), function (err, rep) { //user in Datenbank speichern
 
-                res.status(200).json(newUser);
+                res.status(200).json(newUser.androidID);
             })
         }
     });
 });
 
-//GET auf einen bestimmten User
+app.put('/userAID/:AID', jsonParser, paperwork.accept(jsonuserAIDaccept), function (req, res) {
+    var newData = req.body;
+    var datasetKey = 'userAID:' + newData.androidID;
+    
+    client.exists(datasetKey, function (err, rep) {
+
+        if (rep == 1) {    
+
+            client.set(datasetKey, JSON.stringify(newData), function (err, rep) {
+                var responseURL = "http://5.199.129.74:81/user/" + newData.username;
+                res.status(200).json({"status":200, "url":responseURL});
+            });
+        } else {
+            res.status(404).json('Android ID wurde nicht angelegt!');
+        }
+    })
+});
+
+//GET auf eine bestimmte AndroidID 
 app.get('/userAID/:AID', jsonParser, function (req, res) {
     var datasetKey = 'userAID:' + req.params.AID;
 
@@ -526,4 +550,4 @@ app.get('/place/:PLZ/user', jsonParser, function (req, res) {
 });
 
 
-app.listen(1234);
+app.listen(81);
