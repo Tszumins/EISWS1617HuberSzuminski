@@ -62,7 +62,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     SupportMapFragment mapFrag;
     LocationRequest mLocationRequest;
     Location mLastLocation;
-    Marker mCurrLocationMarker;
+
     Button btnFindPath;
     Button btnSettings;
     Button btnContacts;
@@ -472,9 +472,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
 
         mLastLocation = location;
-        if (mCurrLocationMarker != null) {
-            mCurrLocationMarker.remove();
-        }
 
         //LatLangbestimmen
         LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());

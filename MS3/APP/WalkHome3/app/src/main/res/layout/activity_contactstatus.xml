@@ -61,15 +61,21 @@ android:name="com.google.android.gms.maps.SupportMapFragment" />
             android:id="@+id/btnContactCall"
             android:layout_weight="0.3"
             android:background="#4EB9FF"
-            android:textColor="#222222" />
+            android:textColor="#222222"
+            android:textSize="30sp" />
 
         <TextView
             android:text="TextView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/textView5"
+            android:id="@+id/textViewStatus"
             android:layout_weight="0.2"
-            android:background="#eeeeee" />
+            android:background="#eeeeee"
+            android:textSize="22sp"
+            android:textColor="#444444"
+            android:textAlignment="center"
+            android:paddingTop="40px"
+            android:textStyle="normal|italic" />
 
         <Button
             android:text="Notruf 110"
@@ -78,7 +84,8 @@ android:name="com.google.android.gms.maps.SupportMapFragment" />
             android:id="@+id/button2"
             android:layout_weight="0.3"
             android:background="#ff0000"
-            android:textColor="#222222" />
+            android:textColor="#222222"
+            android:textSize="30sp" />
     </LinearLayout>
 
 

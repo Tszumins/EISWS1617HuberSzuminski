@@ -9,13 +9,16 @@ import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Location;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.ContextCompat;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -29,10 +32,21 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
 import java.util.ArrayList;
+
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 /**
  * Created by yannikhuber on 30.11.16.
@@ -46,10 +60,12 @@ public class ContactStatus extends FragmentActivity implements OnMapReadyCallbac
     LocationRequest mLocationRequest;
     Location mLastLocation;
     TextView head;
+    TextView statusTextView;
     Boolean isBound = false;
     LocationService lS;
     Button btnZurueck;
     Button btnKontaktAnruf;
+    Marker contactPosition;
 
 
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,6 +77,7 @@ public class ContactStatus extends FragmentActivity implements OnMapReadyCallbac
 
         btnZurueck = (Button) findViewById(R.id.buttonZurueck);
         btnKontaktAnruf = (Button) findViewById(R.id.btnContactCall);
+        statusTextView = (TextView) findViewById(R.id.textViewStatus);
 
         btnZurueck.setOnClickListener(new View.OnClickListener(){
             @Override
@@ -84,9 +101,6 @@ public class ContactStatus extends FragmentActivity implements OnMapReadyCallbac
 
 
     }
-
-
-
 
 
     @Override
@@ -132,6 +146,16 @@ public class ContactStatus extends FragmentActivity implements OnMapReadyCallbac
         head.setText(lS.contactName);
         btnKontaktAnruf.setText(lS.contactName + " anrufen");
 
+        final Handler ha=new Handler();
+        ha.postDelayed(new Runnable() {
+
+            @Override
+            public void run() {
+
+                getContactData();
+                ha.postDelayed(this, 30000);
+            }
+        },10);
 
     }
     protected synchronized void buildGoogleApiClient() {
@@ -174,6 +198,72 @@ public class ContactStatus extends FragmentActivity implements OnMapReadyCallbac
         else {
             buildGoogleApiClient();
             mMap.setMyLocationEnabled(true);
+        }
+    }
+
+    void getContactData(){
+        HttpRestGetUserdata userdataGet = new HttpRestGetUserdata();
+        
+        userdataGet.execute("http://5.199.129.74:81/user/"+lS.contactName+"/alarm");
+    }
+
+    public class HttpRestGetUserdata  extends AsyncTask<String, Void, String> {
+        OkHttpClient client = new OkHttpClient();
+        String responsestring;
+
+        String run(String url) throws IOException {
+            Request request = new Request.Builder()
+                    .url(url)
+                    .build();
+
+            Response response = client.newCall(request).execute();
+            return response.body().string();
+        }
+        @Override
+        protected String doInBackground(String... params) {
+            try {
+                responsestring = run(params[0]);
+            } catch (Exception e) {
+                responsestring = e.toString();
+            }
+            return responsestring;
+        }
+        @Override
+        protected void onPostExecute(String res) {
+
+                getJSONparse(res);
+
+        }
+    }
+
+    void getJSONparse(String json) {
+        try{
+        JSONObject jsonObject = new JSONObject(json);
+            String time = jsonObject.getString("time");
+            String status = jsonObject.getString("status");
+            double lat = jsonObject.getDouble("latitude");
+            double lon = jsonObject.getDouble("longitude");
+        if(status == "null"){
+            statusTextView.setText("");
+            statusTextView.setText("Kein Status vorhanden!" + time);
+        }
+            LatLng latLng = new LatLng(lat, lon);
+            mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
+            mMap.animateCamera(CameraUpdateFactory.zoomTo(18));
+            if(contactPosition != null){
+                contactPosition.remove();
+            }
+
+            MarkerOptions markerOptions = new MarkerOptions();
+            markerOptions.position(latLng);
+            markerOptions.title("Current Position");
+            markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
+            contactPosition = mMap.addMarker(markerOptions);
+
+        Log.e("String:::", "++"+status+"++"+time+"++"+ lat + lon);
+        } catch (JSONException e) {
+            statusTextView.setText("");
+           statusTextView.append("Kein Status vorhanden!");
         }
     }
 }
