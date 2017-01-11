@@ -245,11 +245,14 @@ public class Contacts extends Activity {
         }
         @Override
         protected void onPostExecute(String res) {
+            if(res.equals("[]")){
 
-            try {
-                onpostex(res);
-            } catch (JSONException e) {
-                e.printStackTrace();
+            }else {
+                try {
+                    onpostex(res);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
