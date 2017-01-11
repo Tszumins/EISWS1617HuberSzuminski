@@ -6,7 +6,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
-import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.location.Location;
@@ -14,6 +13,7 @@ import android.media.AudioManager;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
@@ -39,7 +39,6 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
@@ -47,6 +46,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
+
 
 
 import java.io.IOException;
@@ -85,10 +85,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     AudioManager audioManager;
     boolean isBound = false;
     LocationService lS;
-
+    String username;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
@@ -179,9 +180,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         try {
             String androidID = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
-            //HttpRestPost restp = new HttpRestPost();
-            //restp.execute("http://5.199.129.74:81/userAID/" + androidID,"{\"androidID\":\""+ androidID +"\",\"username\":\"hallowelt\"}", "put");
-            //restp.execute("http://5.199.129.74:81/userAID/" + androidID,"{\"androidID\":\""+ androidID +"\"}", "post");
             HttpRestGet restg = new HttpRestGet();
             restg.execute("http://5.199.129.74:81/userAID/" + androidID);
         }catch(Exception e ){
@@ -279,7 +277,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
             }
 
-
             waypoints = polylineOptions.getPoints();
             polylinePaths.add(mMap.addPolyline(polylineOptions));
         }
@@ -332,10 +329,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
 
             mMap.moveCamera(CameraUpdateFactory.newLatLngBounds(uebersicht.build(), 150));
-        btnFindPath.setText("Navigieren!");
-        btnFindPath.getBackground().setColorFilter(Color.parseColor("#ff6241"), PorterDuff.Mode.DARKEN);
-        btnFindPathaktiv = false;
-        btnCancel.setVisibility(View.VISIBLE);
+            btnFindPath.setText("Navigieren!");
+            btnFindPath.getBackground().setColorFilter(Color.parseColor("#ff6241"), PorterDuff.Mode.DARKEN);
+            btnFindPathaktiv = false;
+            btnCancel.setVisibility(View.VISIBLE);
     }
 
     @Override
@@ -455,21 +452,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     }
 
-    //berechnet die entfernung zwischen zwei latlng punkten
-    public int entfernungBerechnen(double lat1, double lon1, double lat2, double lon2){
-        double radius = 6378.137; //Erdradius
-        double dLat = lat2 * Math.PI / 180 - lat1 * Math.PI / 180;
-        double dLon = lon2 * Math.PI / 180 - lon1 * Math.PI / 180;
-        double a = Math.sin(dLat/2) * Math.sin(dLat/2)+Math.cos(lat1 * Math.PI /180) * Math.cos(lat2 * Math.PI
-        / 180)* Math.sin(dLon/2) * Math.sin(dLon/2);
-        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-        double d = radius * c;
-        d = d * 1000;
-        return (int) d;
-
-
-    }
-
     @Override
     public void onConnectionSuspended(int i) {
 
@@ -489,45 +471,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public void onLocationChanged(Location location) {
 
 
-       /* if(mLastLocation != null) {
-
-
-            int oldnewdistance = entfernungBerechnen(location.getLatitude(), location.getLongitude(), mLastLocation.getLatitude(), mLastLocation.getLongitude());
-            if (oldnewdistance < 10) {
-                counterSameDistance++;
-                if (counterSameDistance == 7) {
-                    new AlertDialog.Builder(MapsActivity.this)
-                            .setTitle("Nachfrage")
-                            .setMessage("Ist alles in Ordnung?")
-                            .setPositiveButton("Ja", new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int which) {
-                                    counterSameDistance = 8;
-                                }
-                            })
-                            .setNegativeButton("Nein", new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int which) {
-                                    //sende Alarm an Notfallkontakte
-                                }
-                            })
-                            .setIcon(android.R.drawable.ic_dialog_alert)
-                            .show();
-                }
-            }else{
-                counterSameDistance = 0;
-            }
-        }*/
         mLastLocation = location;
         if (mCurrLocationMarker != null) {
             mCurrLocationMarker.remove();
         }
 
-        //Place current location marker
+        //LatLangbestimmen
         LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
-        MarkerOptions markerOptions = new MarkerOptions();
-        markerOptions.position(latLng);
-        markerOptions.title("Current Position");
-        markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_MAGENTA));
-        mCurrLocationMarker = mMap.addMarker(markerOptions);
+
 
 
 
@@ -536,61 +487,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
             mMap.animateCamera(CameraUpdateFactory.zoomTo(18));
         }
-        /*
-        if(allpoints.isEmpty()==true){
 
-        }else {
-            for (int i = 0; i < allpoints.size(); i++) {
-
-                int distanz = entfernungBerechnen(allpoints.get(i).getLatitude(), allpoints.get(i).getLongitude(), latLng.latitude, latLng.longitude);
-
-
-
-                if (distanz < 100) {
-
-                    counter1 = 0;
-                    counterAbweichung = 0;
-                    break;
-                } else {
-                    counter1++;
-                    if (counter1 == allpoints.size()) {
-
-                        counterAbweichung++;
-                        if(counterAbweichung == 2) { //wenn die position 2 mal nicht auf der route war wird eine Abfrage an den User ausgelöst
-                            new AlertDialog.Builder(MapsActivity.this)
-                                    .setTitle("Nachfrage")
-                                    .setMessage("Ist alles in Ordnung?")
-                                    .setPositiveButton("Ja", new DialogInterface.OnClickListener() {
-                                        public void onClick(DialogInterface dialog, int which) {
-                                            counterAbweichung = 11; //wenn der Nutzer sagt dass alles okay ist, wird der counter auf 11 gesetzt und erst wieder auf 0 wenn der User wieder auf der strecke ist
-                                        }
-                                    })
-                                    .setNegativeButton("Nein", new DialogInterface.OnClickListener() {
-                                        public void onClick(DialogInterface dialog, int which) {
-                                            //sende Alarm an Notfallkontakte
-                                        }
-                                    })
-                                    .setIcon(android.R.drawable.ic_dialog_alert)
-                                    .show();
-                        }
-                        if(counterAbweichung == 10){ //wenn der Counter auf 10 steigt wird ein notfall ausgelöst, da der Nutzer nicht mit "JA" geantwortet hat
-                            //sende Alarm an Nofallkontakte
-                        }
-                        counter1 = 0;
-                    }
-
-                }
-            }
-
-        }
-
-        */
-
-        //location updates werden gestoppt
-        /*if (mGoogleApiClient != null) {
-            LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
-        }*/
     }
+
     @Override
     public void onRequestPermissionsResult(int requestCode,
                                            String permissions[], int[] grantResults) {
@@ -618,10 +517,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 }
                 return;
             }
-
-
         }
     }
+
     private ServiceConnection serviceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder iBinder) {
@@ -679,7 +577,39 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 startActivity(intent1);}catch(Exception e ){
                 etDestination.append(e.toString());
             }
+        }else{
+            usernameFilter(response);
         }
+    }
+
+    void usernameFilter(String url){
+        url = url.substring(1, url.length()-1);
+        int count = 0;
+        String usernameSpeicher ="";
+
+
+        for(int i = 0;i < url.length();i++){
+            String s = "" + url.charAt(i);
+
+            if(count == 4){
+                usernameSpeicher = usernameSpeicher + url.charAt(i);
+            }
+            if(s.contains("/")) {
+                count++;
+            }
+        }
+        username = usernameSpeicher;
+        final Handler ha=new Handler();
+        ha.postDelayed(new Runnable() {
+
+            @Override
+            public void run() {
+
+                lS.userName = username;
+
+            }
+        }, 1000);
+
     }
 
 }

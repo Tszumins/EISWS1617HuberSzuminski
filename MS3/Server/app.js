@@ -51,6 +51,7 @@ var jsonplaceuseraccept = {
 var jsonuseralarmaccept = {
     'latitude': paperwork.optional(Number),
     'longitude': paperwork.optional(Number),
+    'status': paperwork.optional(String),
     'time': String
 }
 
@@ -97,7 +98,9 @@ app.get('/user', jsonParser, function (req, res) {
                         users.push(JSON.parse(val));
                     }
                 });
-                res.status(200).json(users);
+                 var user = {users};
+                
+                res.status(200).json(user);
             })
         }
     })
@@ -202,6 +205,24 @@ app.post('/user/:USERNAME/contact', jsonParser, paperwork.accept(jsoncontactsacc
     });
 });
 
+app.put('/user/:USERNAME/contact/:CONTACTNAME', jsonParser, paperwork.accept(jsoncontactsaccept), function (req, res) {
+    var newData = req.body;
+    var datasetKey = 'c:' + req.params.USERNAME + 'contact:' + req.params.CONTACTNAME;
+    
+    client.exists(datasetKey, function (err, rep) {
+
+        if (rep == 1) {    
+
+            client.set(datasetKey, JSON.stringify(newData), function (err, rep) {
+                
+                res.status(200).json("Kontaktdaten wurden geändert!");
+            });
+        } else {
+            res.status(404).json('Der User ist nicht dein Kontakt!');
+        }
+    })
+});
+
 //GET auf einen bestimmten User
 app.get('/user/:USERNAME/contact/:CONTACTNAME', jsonParser, function (req, res) {
     var datasetKey = 'c:' + req.params.USERNAME + 'contact:' + req.params.CONTACTNAME;
@@ -209,7 +230,11 @@ app.get('/user/:USERNAME/contact/:CONTACTNAME', jsonParser, function (req, res) 
     client.get(datasetKey, function (err, rep) {
 
         if (rep) {
-            res.status(200).type('json').send(rep); //liegt schon in Json vor
+            var newData = JSON.parse(rep);
+            newData.url = "http://5.199.129.74:81/user/" + req.params.USERNAME + "/contact/" + req.params.CONTACTNAME;
+            
+            var user = {newData};
+            res.status(200).json(user);
         } else {
             res.status(404).type('text').send('Der Contact mit dem Usernamen: ' + req.params.CONTACTNAME + 'ist nicht in der Kontaktliste!');
         }
@@ -230,7 +255,9 @@ app.get('/user/:USERNAME/contact', jsonParser, function (req, res) {
                         users.push(JSON.parse(val));
                     }
                 });
-                res.status(200).json(users);
+                var user = {users};
+                
+                res.status(200).json(user);
             })
         }
     })
@@ -384,9 +411,11 @@ app.get('/userAID/:AID', jsonParser, function (req, res) {
     var datasetKey = 'userAID:' + req.params.AID;
 
     client.get(datasetKey, function (err, rep) {
-
+        
         if (rep) {
-            res.status(200).type('json').send(rep); //liegt schon in Json vor
+            var userdata = JSON.parse(rep);
+            var url = "http://5.199.129.74:81/user/" + userdata.username;
+            res.status(200).json(url); //liegt schon in Json vor
         } else {
             res.status(404).type('text').send('Das Smartphone wurde noch nicht registriert!');
         }

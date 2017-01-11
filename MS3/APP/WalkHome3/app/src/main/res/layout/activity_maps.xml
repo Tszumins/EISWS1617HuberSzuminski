@@ -23,18 +23,18 @@
             <Space
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="0.1" />
+                android:layout_weight="0.2" />
 
             <LinearLayout
                 android:orientation="horizontal"
                 android:layout_width="match_parent"
                 android:layout_height="0px"
-                android:layout_weight="0.8">
+                android:layout_weight="0.6">
 
                 <Space
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_weight="0.2" />
+                    android:layout_weight="0.25" />
 
                 <Button
                     android:layout_width="0px"
@@ -42,19 +42,19 @@
                     android:id="@+id/buttonEinstellungen"
 
                     android:textSize="12sp"
-                    android:layout_weight="0.8"
+                    android:layout_weight="0.5"
                     android:background="@drawable/ic_einstellungen" />
 
                 <Space
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_weight="0.2" />
+                    android:layout_weight="0.25" />
             </LinearLayout>
 
             <Space
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="0.1" />
+                android:layout_weight="0.2" />
         </LinearLayout>
 
         <Button
@@ -80,18 +80,18 @@
             <Space
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="0.1" />
+                android:layout_weight="0.2" />
 
             <LinearLayout
                 android:orientation="horizontal"
                 android:layout_width="match_parent"
                 android:layout_height="0px"
-                android:layout_weight="0.8">
+                android:layout_weight="0.6">
 
                 <Space
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_weight="0.2" />
+                    android:layout_weight="0.25" />
 
                 <Button
                     android:layout_width="0px"
@@ -100,19 +100,19 @@
                     android:id="@+id/buttonKontakte"
 
                     android:textSize="12sp"
-                    android:layout_weight="0.8"
+                    android:layout_weight="0.5"
                     android:background="@drawable/ic_kontakte" />
 
                 <Space
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_weight="0.2" />
+                    android:layout_weight="0.25" />
             </LinearLayout>
 
             <Space
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="0.1" />
+                android:layout_weight="0.2" />
         </LinearLayout>
 
     </LinearLayout>
@@ -168,24 +168,24 @@
             <Space
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="1" />
+                android:layout_weight="0.7" />
 
             <LinearLayout
                 android:orientation="vertical"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_weight="1">
+                android:layout_weight="0.3">
 
                 <Space
                     android:layout_width="match_parent"
                     android:layout_height="0px"
-                    android:layout_weight="0.05" />
+                    android:layout_weight="0.2" />
 
                 <ImageView
                     android:layout_width="match_parent"
                     android:layout_height="0px"
                     android:id="@+id/imageView"
-                    android:layout_weight="0.95"
+                    android:layout_weight="0.8"
                     android:background="@drawable/ic_ziel" />
             </LinearLayout>
 

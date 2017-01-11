@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.text.format.Time;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -30,6 +31,7 @@ public class Registrieren extends Activity {
     EditText edt_name;
     EditText edt_username;
     EditText edt_telefon;
+    String usernameSpeicher;
 
     public static final MediaType JSON
             = MediaType.parse("application/json; charset=utf-8");
@@ -91,7 +93,7 @@ public class Registrieren extends Activity {
 
             String androidID = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
             HttpRestPost restp = new HttpRestPost();
-
+            usernameSpeicher = edt_username.getText().toString();
 
             restp.execute("http://5.199.129.74:81/user", "{\"androidID\":\""+ androidID +"\",\"username\":\""+ edt_username.getText().toString()+"\",\"nachname\":\""+ edt_name.getText().toString()+"\",\"vorname\":\""+ edt_vorname.getText().toString() +"\",\"telefonnummer\":"+ edt_telefon.getText().toString()+",\"status\":\"zuHause\",\"fcmID\":\"djkjkjdkjkdj\"}","post");
 
@@ -108,7 +110,7 @@ public class Registrieren extends Activity {
     public class HttpRestPost  extends AsyncTask<String, Void, String> {
 
         OkHttpClient client = new OkHttpClient();
-        String abcde;
+        String userDaten;
 
         String post(String url, String json, String methode) throws IOException {
             if(methode == "post") {
@@ -135,13 +137,13 @@ public class Registrieren extends Activity {
         @Override
         protected String doInBackground(String... params) {
             try {
-                abcde = post(params[0], params[1], params[2]);
+                userDaten = post(params[0], params[1], params[2]);
 
             } catch (Exception e) {
-                abcde = e.toString();
+                userDaten = e.toString();
             }
 
-            return abcde;
+            return userDaten;
         }
 
         @Override
@@ -202,9 +204,52 @@ public class Registrieren extends Activity {
 
         @Override
         protected void onPostExecute(String res) {
+
+            Time zeit = new Time();
+            zeit.setToNow();
+
+            HttpRestPostAlarm alarmpost = new HttpRestPostAlarm();
+            alarmpost.execute("http://5.199.129.74:81/user/"+usernameSpeicher+"/alarm", "{\"time\":\""+zeit.format("%H:%M").toString()+"\"}");
+
             Toast.makeText(getApplicationContext(), "Registrierung Erfolgreich!", Toast.LENGTH_SHORT).show();
             Intent intent = new Intent(getApplicationContext(), MapsActivity.class);
             startActivity(intent);
         }
     }
+
+    /* ALARM WIRD ANGELEGT UM IHN SPÄTER MIT dEN GPS DATEN ZU AKTUALISIEren  */
+
+    public class HttpRestPostAlarm  extends AsyncTask<String, Void, String> {
+
+        OkHttpClient client = new OkHttpClient();
+        String userDaten;
+
+        String post(String url, String json) throws IOException {
+
+                RequestBody body = RequestBody.create(JSON, json);
+                Request request = new Request.Builder()
+                        .url(url)
+                        .post(body)
+                        .build();
+                Response response = client.newCall(request).execute();
+                return response.body().string();
+        }
+
+        @Override
+        protected String doInBackground(String... params) {
+            try {
+                userDaten = post(params[0], params[1]);
+
+            } catch (Exception e) {
+                userDaten = e.toString();
+            }
+            return userDaten;
+        }
+
+        @Override
+        protected void onPostExecute(String res) {
+
+        }
+    }
+
 }

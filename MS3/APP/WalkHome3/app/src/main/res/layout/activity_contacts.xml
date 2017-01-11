@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -7,7 +8,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_weight="0.01"
-        android:background="@color/cast_expanded_controller_ad_label_background_color">
+        android:background="#dddddd"
+        android:elevation="13dp">
 
         <Button
             android:text="ZURÜCK"
@@ -16,7 +18,7 @@
             android:layout_margin="4dp"
 
             android:id="@+id/buttonZurueck"
-            android:background="@color/cast_expanded_controller_background_color"
+            android:background="#222222"
             android:textColor="@color/cast_expanded_controller_text_color" />
 
         <TextView
@@ -24,32 +26,48 @@
             android:layout_width="match_parent"
             android:layout_height="40dp"
             android:id="@+id/headerEinstellungen"
-            android:textSize="18sp"
+            android:textSize="22sp"
             android:textAlignment="center"
-            android:elevation="24dp" />
+            android:elevation="24dp"
+            android:textColor="#222222"
+            android:textStyle="normal|bold" />
     </LinearLayout>
 
     <LinearLayout
         android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_weight="0.5">
+        android:layout_height="0dp"
+        android:layout_weight="0.5"
+        android:background="#eeeeee">
 
         <EditText
             android:layout_width="match_parent"
-            android:layout_height="0dp"
+            android:layout_height="15dp"
             android:layout_weight="0.2"
             android:hint="neuen Kontakt suchen"
             android:inputType="textPersonName"
 
             android:id="@+id/searchUser"
-            android:textAlignment="center" />
+            android:textAlignment="center"
+            android:textColor="#222222" />
 
-        <LinearLayout
-            android:orientation="vertical"
+        <ScrollView
+            xmlns:android="http://schemas.android.com/apk/res/android"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="0.8"></LinearLayout>
+            android:layout_weight="0.8">
+
+
+            <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:id="@+id/userContainer">
+
+            </LinearLayout>
+
+
+        </ScrollView>
     </LinearLayout>
 
     <LinearLayout
@@ -65,15 +83,19 @@
             android:layout_height="0dp"
             android:layout_weight="0.2"
             android:id="@+id/textView3"
-            android:textSize="18sp"
+            android:textSize="22sp"
             android:textAlignment="center"
-            android:background="@color/cast_expanded_controller_ad_label_background_color" />
+            android:background="#dddddd"
+            android:elevation="24dp"
+            android:textColor="#222222"
+            android:textStyle="normal|bold" />
 
         <ScrollView
             xmlns:android="http://schemas.android.com/apk/res/android"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="0.8">
+            android:layout_weight="0.8"
+            android:background="#eeeeee">
 
 
         <LinearLayout
