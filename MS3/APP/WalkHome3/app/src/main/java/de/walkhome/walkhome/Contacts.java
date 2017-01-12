@@ -246,7 +246,12 @@ public class Contacts extends Activity {
         @Override
         protected void onPostExecute(String res) {
             if(res.equals("[]")){
-
+                contactBuuttons.clear();
+                deleteContactButtons.clear();
+                spaces.clear();
+                userLayouts.clear();
+                LinearLayout ll = (LinearLayout) findViewById(R.id.contactButton);
+                ll.removeAllViews();
             }else {
                 try {
                     onpostex(res);
@@ -353,7 +358,7 @@ public class Contacts extends Activity {
         }
     }
 
-     /*----------------------------------- GET auf ALLE USER (SUCHE) ---------- -------------------------------------
+     /*----------------------------------- GET auf ALLE USER (SUCHE) ----------------------------------------------
     * -----------------------------------------------------------------------------------------------------------*/
 
     public class HttpRestGetotherUsers  extends AsyncTask<String, Void, String> {

@@ -246,6 +246,9 @@ public class ContactStatus extends FragmentActivity implements OnMapReadyCallbac
         if(status == "null"){
             statusTextView.setText("");
             statusTextView.setText("Kein Status vorhanden!" + time);
+        }else{
+            statusTextView.setText("");
+            statusTextView.setText("Seit: "+time +" "+ status);
         }
             LatLng latLng = new LatLng(lat, lon);
             mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));

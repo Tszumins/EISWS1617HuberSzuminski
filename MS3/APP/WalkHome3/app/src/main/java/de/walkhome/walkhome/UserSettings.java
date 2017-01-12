@@ -252,7 +252,7 @@ public class UserSettings extends Activity {
                 }
 
                 HttpRestput putUserdata = new HttpRestput();
-                String payload = "{\"androidID\":\""+ jsonObject.getString("androidID") +"\",\"username\":\""+ jsonObject.getString("username")+"\",\"nachname\":\""+ jsonObject.getString("nachname")+"\",\"vorname\":\""+ jsonObject.getString("vorname") +"\",\"telefonnummer\":"+ jsonObject.getString("telefonnummer")+",\"status\":\""+jsonObject.getString("status")+"\",\"fcmID\":\""+jsonObject.getString("fcmID")+"\"}";
+                String payload = "{\"androidID\":\""+ jsonObject.getString("androidID") +"\",\"username\":\""+ jsonObject.getString("username")+"\",\"nachname\":\""+ jsonObject.getString("nachname")+"\",\"vorname\":\""+ jsonObject.getString("vorname") +"\",\"telefonnummer\":\""+ jsonObject.getString("telefonnummer")+"\",\"status\":\""+jsonObject.getString("status")+"\",\"fcmID\":\""+jsonObject.getString("fcmID")+"\"}";
 
                 putUserdata.execute("http://5.199.129.74:81/user/"+ jsonObject.getString("username"), payload);
 

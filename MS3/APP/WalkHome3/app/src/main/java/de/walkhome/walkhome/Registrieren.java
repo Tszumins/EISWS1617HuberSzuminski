@@ -95,9 +95,7 @@ public class Registrieren extends Activity {
             HttpRestPost restp = new HttpRestPost();
             usernameSpeicher = edt_username.getText().toString();
 
-            restp.execute("http://5.199.129.74:81/user", "{\"androidID\":\""+ androidID +"\",\"username\":\""+ edt_username.getText().toString()+"\",\"nachname\":\""+ edt_name.getText().toString()+"\",\"vorname\":\""+ edt_vorname.getText().toString() +"\",\"telefonnummer\":"+ edt_telefon.getText().toString()+",\"status\":\"zuHause\",\"fcmID\":\"djkjkjdkjkdj\"}","post");
-
-
+            restp.execute("http://5.199.129.74:81/user", "{\"androidID\":\""+ androidID +"\",\"username\":\""+ edt_username.getText().toString()+"\",\"nachname\":\""+ edt_name.getText().toString()+"\",\"vorname\":\""+ edt_vorname.getText().toString() +"\",\"telefonnummer\":\""+ edt_telefon.getText().toString()+"\",\"status\":\"zuHause\",\"fcmID\":\"djkjkjdkjkdj\"}","post");
 
         }else{
             Toast.makeText(this,"Bitte alle Felder korrekt ausfüllen!", Toast.LENGTH_SHORT).show();

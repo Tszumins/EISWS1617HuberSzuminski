@@ -12,7 +12,7 @@ var jsonuseraccept = {
     'fcmID': String,
     'vorname': String,
     'nachname': String,
-    'telefonnummer': Number,
+    'telefonnummer': String,
     'status': String,
     'currentPLZ': paperwork.optional(Number)
 }
@@ -23,7 +23,7 @@ var jsonputuseraccept = {
     'fcmID': String,
     'vorname': String,
     'nachname': String,
-    'telefonnummer': Number,
+    'telefonnummer': String,
     'status': String,
     'currentPLZ': paperwork.optional(Number)
 }
@@ -75,7 +75,7 @@ app.post('/user', jsonParser, paperwork.accept(jsonuseraccept), function (req, r
             res.status(400).json("Der Username ist schon vergeben!");
         } else {
             client.set(datasetKey, JSON.stringify(newUser), function (err, rep) { //user in Datenbank speichern
-
+                console.log(newUser);
                 res.status(200).json(newUser);
             })
 
@@ -131,13 +131,14 @@ app.delete('/user/:USERNAME', jsonParser, function (req, res) {
 
             client.get(datasetKey, function (err, rep2) {
                 var userData = JSON.parse(rep2);
+                var datasetKeyAndroidID = 'userAID:' + userData.androidID;
 
                 client.del(datasetKey, function (err, rep) {});
 
                 client.keys(datasetKeycontacts + '*', function (err, rep) {
 
                     if (rep.length == 0) {
-                        res.status(404).json([]);
+                        
                         return;
                     } else {
                         var users = [];
@@ -156,12 +157,7 @@ app.delete('/user/:USERNAME', jsonParser, function (req, res) {
                         })
                     }
                 })
-
-                var datasetKeyAndroidID = 'userAID:' + userData.androidID;
-
                 client.del(datasetKeyAndroidID, function (err, rep) {
-
-                    
                 });
                 res.status(200).json('User: ' + userData.username + ' wurde gelöscht!');
             });
