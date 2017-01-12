@@ -123,19 +123,48 @@ app.get('/user/:USERNAME', jsonParser, function (req, res) {
 
 app.delete('/user/:USERNAME', jsonParser, function (req, res) {
     var datasetKey = 'user:' + req.params.USERNAME;
+    var datasetKeycontacts = 'c:' + req.params.USERNAME + 'contact:';
+
 
     client.exists(datasetKey, function (err, rep) {
         if (rep == 1) {
-            var username;
 
-            client.get(datasetKey, function (err, rep) {
-                username = JSON.parse(rep);
+            client.get(datasetKey, function (err, rep2) {
+                var userData = JSON.parse(rep2);
+
+                client.del(datasetKey, function (err, rep) {});
+
+                client.keys(datasetKeycontacts + '*', function (err, rep) {
+
+                    if (rep.length == 0) {
+                        res.status(404).json([]);
+                        return;
+                    } else {
+                        var users = [];
+                        client.mget(rep, function (err, rep) {
+                            rep.forEach(function (val) {
+                                if (val != null) {
+                                    users.push(JSON.parse(val));
+                                }
+                            });
+                            for (var i = 0; i < users.length; i++) {
+                                client.del(datasetKeycontacts + "" + users[i].contactname, function (err, rep) {
+
+                                });
+                            }
+
+                        })
+                    }
+                })
+
+                var datasetKeyAndroidID = 'userAID:' + userData.androidID;
+
+                client.del(datasetKeyAndroidID, function (err, rep) {
+
+                    
+                });
+                res.status(200).json('User: ' + userData.username + ' wurde gelöscht!');
             });
-
-            client.del(datasetKey, function (err, rep) {
-
-                res.status(200).json('User: ' + username.username + ' wurde gelöscht!');
-            })
         } else {
             res.status(404).json('User existiert nicht!');
         }

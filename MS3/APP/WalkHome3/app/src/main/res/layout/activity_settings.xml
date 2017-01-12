@@ -2,13 +2,14 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:weightSum="1">
+    android:weightSum="1"
+    android:background="#eeeeee">
 
     <LinearLayout
         android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/cast_expanded_controller_ad_label_background_color">
+        android:background="#cccccc">
 
         <Button
             android:text="ZURÜCK"
@@ -16,7 +17,7 @@
             android:layout_height="30dp"
             android:layout_margin="4dp"
             android:id="@+id/buttonZurueck"
-            android:background="@color/cast_expanded_controller_background_color"
+            android:background="#222222"
             android:textColor="@color/cast_expanded_controller_text_color"
             />
 
@@ -25,18 +26,26 @@
             android:layout_width="match_parent"
             android:layout_height="40dp"
             android:id="@+id/headerEinstellungen"
-            android:textSize="18sp"
-            android:textAlignment="center" />
+            android:textSize="22sp"
+            android:textAlignment="center"
+            android:textStyle="normal|bold"
+            android:textColor="#222222" />
     </LinearLayout>
 
+    <Space
+        android:layout_width="match_parent"
+        android:layout_height="20px" />
+
     <TextView
-        android:text="Benutzerinformation"
+        android:text="Benutzerinformationen"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/textView"
         android:textSize="18sp"
 
-        android:textAlignment="center" />
+        android:textAlignment="center"
+        android:textColor="#222222"
+        android:textStyle="normal|bold" />
 
 
     <LinearLayout
@@ -48,19 +57,21 @@
         <Space
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="0.3" />
+            android:layout_weight="0.1" />
 
         <LinearLayout
             android:orientation="vertical"
-            android:layout_width="wrap_content"
+            android:layout_width="0px"
             android:layout_height="wrap_content"
-            android:layout_weight="0.4">
+            android:layout_weight="0.8">
 
             <TextView
                 android:text="Vorname"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:id="@+id/textView10" />
+                android:id="@+id/textView10"
+                android:textStyle="normal|bold"
+                android:textColor="#222222" />
 
             <EditText
                 android:layout_width="match_parent"
@@ -74,7 +85,9 @@
                 android:text="Nachname"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:id="@+id/textView7" />
+                android:id="@+id/textView7"
+                android:textStyle="normal|bold"
+                android:textColor="#222222" />
 
             <EditText
                 android:layout_width="match_parent"
@@ -88,7 +101,9 @@
                 android:text="Mobilnummer"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:id="@+id/textView11" />
+                android:id="@+id/textView11"
+                android:textStyle="normal|bold"
+                android:textColor="#222222" />
 
             <EditText
                 android:layout_width="match_parent"
@@ -102,24 +117,28 @@
                 android:text="Ändern"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:id="@+id/bt_changeUserData" />
+                android:id="@+id/bt_changeUserData"
+                android:background="#E88C0C"
+                android:textColor="#222222" />
         </LinearLayout>
 
         <Space
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="0.3" />
+            android:layout_weight="0.1" />
     </LinearLayout>
 
     <TextView
-        android:text="App Einstellung"
+        android:text="App Einstellungen"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
         android:id="@+id/textView2"
         android:textSize="18sp"
 
-        android:textAlignment="center" />
+        android:textAlignment="center"
+        android:textStyle="normal|bold"
+        android:textColor="#222222" />
 
     <LinearLayout
         android:orientation="horizontal"
@@ -128,39 +147,56 @@
         android:layout_marginTop="10dp">
 
         <Space
-            android:layout_width="wrap_content"
+            android:layout_width="0px"
             android:layout_height="wrap_content"
-            android:layout_weight="0.3" />
+            android:layout_weight="0.1" />
 
         <LinearLayout
             android:orientation="vertical"
-            android:layout_width="wrap_content"
+            android:layout_width="0px"
             android:layout_height="wrap_content"
-            android:layout_weight="0.4">
+            android:layout_weight="0.8">
 
             <Switch
                 android:text="Leute im Umkreis"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:id="@+id/sw_PeopleAround" />
+                android:id="@+id/sw_PeopleAround"
+                android:textColor="#222222" />
 
             <Switch
                 android:text="Routen Abweichung"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:id="@+id/sw_RouteTolerance" />
+                android:id="@+id/sw_RouteTolerance"
+                android:textColor="#222222" />
 
             <Switch
                 android:text="Kopfhöhrer Reisleine"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:id="@+id/sw_Headphone" />
+                android:id="@+id/sw_Headphone"
+                android:textColor="#222222" />
+
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="20px" />
+
+            <Button
+                android:text="Account löschen"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/buttonUserDelete"
+                android:layout_weight="0.3"
+                android:background="#ff0000"
+                android:textColor="#222222" />
         </LinearLayout>
 
         <Space
-            android:layout_width="wrap_content"
+            android:layout_width="0px"
             android:layout_height="wrap_content"
-            android:layout_weight="0.3" />
+            android:layout_weight="0.1" />
+
     </LinearLayout>
 
 

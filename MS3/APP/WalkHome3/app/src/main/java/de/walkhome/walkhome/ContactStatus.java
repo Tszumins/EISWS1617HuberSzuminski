@@ -203,7 +203,7 @@ public class ContactStatus extends FragmentActivity implements OnMapReadyCallbac
 
     void getContactData(){
         HttpRestGetUserdata userdataGet = new HttpRestGetUserdata();
-        
+
         userdataGet.execute("http://5.199.129.74:81/user/"+lS.contactName+"/alarm");
     }
 

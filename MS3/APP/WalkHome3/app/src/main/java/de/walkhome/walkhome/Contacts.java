@@ -324,7 +324,7 @@ public class Contacts extends Activity {
 
                                     }
                                 })
-                                .setIcon(android.R.drawable.ic_dialog_alert)
+                                .setIcon(R.drawable.ic_loeschen)
                                 .show();
                     }
                 });
