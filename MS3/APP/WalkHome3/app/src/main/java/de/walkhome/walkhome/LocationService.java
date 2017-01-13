@@ -227,7 +227,7 @@ public class LocationService extends Service  {
             @Override
             public void run() {
 
-                if(lLocation != null) {
+                if(lLocation != null && userName != null) {
                     double lat = lLocation.getLatitude();
                     double lon = lLocation.getLongitude();
                    putUserLocation(lat,lon);
@@ -235,6 +235,21 @@ public class LocationService extends Service  {
                 ha.postDelayed(this, 30000);
             }
         }, 30000);
+        final Handler ha2 =new Handler();
+        ha2.postDelayed(new Runnable() {
+
+            @Override
+            public void run() {
+
+                if(lLocation != null && userName != null) {
+                    String lat = "" + lLocation.getLatitude();
+                    String lon = "" + lLocation.getLongitude();
+                    HttpRestPostLocation postLoc = new HttpRestPostLocation();
+                    postLoc.execute("http://5.199.129.74:81/place", "{\"username\":\""+userName+"\",\"latitude\":\""+lat+"\",\"longitude\":\""+lon+"\"}");
+                }
+                ha2.postDelayed(this, 300000);//ALLE FÜNF MINUTEN wird die "Location" für Ortsgruppen gepostet
+            }
+        }, 30000);//nach 30 sekunden werden das erste mal die "Location" für die Ortrsgruppen gepostet
     }
 
     @Override
@@ -333,4 +348,43 @@ public class LocationService extends Service  {
            Log.e(TAG,"ServerantwortPUT:" + res);
         }
     }
+    /*----------------------------------------------------------------------------------------
+    * ----------------------------------------------------------------------------------------
+    * ----------------------Post um die "Location" an den server zu senden-----------*/
+
+    public class HttpRestPostLocation  extends AsyncTask<String, Void, String> {
+
+        OkHttpClient client = new OkHttpClient();
+        String userDaten;
+
+        String post(String url, String json) throws IOException {
+
+                RequestBody body = RequestBody.create(JSON, json);
+                Request request = new Request.Builder()
+                        .url(url)
+                        .post(body)
+                        .build();
+                Response response = client.newCall(request).execute();
+                return response.body().string();
+
+        }
+
+        @Override
+        protected String doInBackground(String... params) {
+            try {
+                userDaten = post(params[0], params[1]);
+
+            } catch (Exception e) {
+                userDaten = e.toString();
+            }
+
+            return userDaten;
+        }
+
+        @Override
+        protected void onPostExecute(String res) {
+
+        }
+    }
+
 }

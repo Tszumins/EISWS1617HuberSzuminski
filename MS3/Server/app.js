@@ -39,8 +39,9 @@ var jsoncontactsaccept = {
 }
 
 var jsonplaceaccept = {
-    'latitude': Number,
-    'longitude': Number
+    'latitude': String,
+    'longitude': String,
+    'username': String
 }
 
 var jsonplaceuseraccept = {
@@ -98,8 +99,10 @@ app.get('/user', jsonParser, function (req, res) {
                         users.push(JSON.parse(val));
                     }
                 });
-                 var user = {users};
-                
+                var user = {
+                    users
+                };
+
                 res.status(200).json(user);
             })
         }
@@ -138,7 +141,7 @@ app.delete('/user/:USERNAME', jsonParser, function (req, res) {
                 client.keys(datasetKeycontacts + '*', function (err, rep) {
 
                     if (rep.length == 0) {
-                        
+
                         return;
                     } else {
                         var users = [];
@@ -157,8 +160,7 @@ app.delete('/user/:USERNAME', jsonParser, function (req, res) {
                         })
                     }
                 })
-                client.del(datasetKeyAndroidID, function (err, rep) {
-                });
+                client.del(datasetKeyAndroidID, function (err, rep) {});
                 res.status(200).json('User: ' + userData.username + ' wurde gelöscht!');
             });
         } else {
@@ -233,13 +235,13 @@ app.post('/user/:USERNAME/contact', jsonParser, paperwork.accept(jsoncontactsacc
 app.put('/user/:USERNAME/contact/:CONTACTNAME', jsonParser, paperwork.accept(jsoncontactsaccept), function (req, res) {
     var newData = req.body;
     var datasetKey = 'c:' + req.params.USERNAME + 'contact:' + req.params.CONTACTNAME;
-    
+
     client.exists(datasetKey, function (err, rep) {
 
-        if (rep == 1) {    
+        if (rep == 1) {
 
             client.set(datasetKey, JSON.stringify(newData), function (err, rep) {
-                
+
                 res.status(200).json("Kontaktdaten wurden geändert!");
             });
         } else {
@@ -257,8 +259,10 @@ app.get('/user/:USERNAME/contact/:CONTACTNAME', jsonParser, function (req, res) 
         if (rep) {
             var newData = JSON.parse(rep);
             newData.url = "http://5.199.129.74:81/user/" + req.params.USERNAME + "/contact/" + req.params.CONTACTNAME;
-            
-            var user = {newData};
+
+            var user = {
+                newData
+            };
             res.status(200).json(user);
         } else {
             res.status(404).type('text').send('Der Contact mit dem Usernamen: ' + req.params.CONTACTNAME + 'ist nicht in der Kontaktliste!');
@@ -280,8 +284,10 @@ app.get('/user/:USERNAME/contact', jsonParser, function (req, res) {
                         users.push(JSON.parse(val));
                     }
                 });
-                var user = {users};
-                
+                var user = {
+                    users
+                };
+
                 res.status(200).json(user);
             })
         }
@@ -313,7 +319,7 @@ app.delete('/user/:USERNAME/contact/:CONTACTNAME', jsonParser, function (req, re
 app.post('/user/:USERNAME/alarm', jsonParser, paperwork.accept(jsonuseralarmaccept), function (req, res) {
 
     var newAlarm = req.body; // Body beinhaltet geparstes JSON-Objekt
-        newAlarm.username = req.params.USERNAME;
+    newAlarm.username = req.params.USERNAME;
     var datasetKey = 'u:' + req.params.USERNAME + 'alarm:';
 
     client.exists(datasetKey, function (err, rep) {
@@ -332,7 +338,7 @@ app.post('/user/:USERNAME/alarm', jsonParser, paperwork.accept(jsonuseralarmacce
 app.put('/user/:USERNAME/alarm', jsonParser, paperwork.accept(jsonuseralarmaccept), function (req, res) {
     var newData = req.body;
     var datasetKey = 'u:' + req.params.USERNAME + 'alarm:';
-    
+
     client.exists(datasetKey, function (err, rep) {
 
         if (rep == 1) {
@@ -397,13 +403,16 @@ app.post('/userAID', jsonParser, paperwork.accept(jsonuserAIDaccept), function (
 
     client.exists(datasetKey, function (err, rep) {
         if (rep == 1) {
-            client.get(datasetKey, function(err, rep){
+            client.get(datasetKey, function (err, rep) {
                 var datajson = JSON.parse(rep);
                 var responeURL = "http://5.199.129.74:81/user/" + datajson.username;
-                
-                res.status(400).json({"status":400,"url": responeURL});
+
+                res.status(400).json({
+                    "status": 400,
+                    "url": responeURL
+                });
             })
-            
+
         } else {
             client.set(datasetKey, JSON.stringify(newUser), function (err, rep) { //user in Datenbank speichern
 
@@ -416,14 +425,17 @@ app.post('/userAID', jsonParser, paperwork.accept(jsonuserAIDaccept), function (
 app.put('/userAID/:AID', jsonParser, paperwork.accept(jsonuserAIDaccept), function (req, res) {
     var newData = req.body;
     var datasetKey = 'userAID:' + newData.androidID;
-    
+
     client.exists(datasetKey, function (err, rep) {
 
-        if (rep == 1) {    
+        if (rep == 1) {
 
             client.set(datasetKey, JSON.stringify(newData), function (err, rep) {
                 var responseURL = "http://5.199.129.74:81/user/" + newData.username;
-                res.status(200).json({"status":200, "url":responseURL});
+                res.status(200).json({
+                    "status": 200,
+                    "url": responseURL
+                });
             });
         } else {
             res.status(404).json('Android ID wurde nicht angelegt!');
@@ -436,7 +448,7 @@ app.get('/userAID/:AID', jsonParser, function (req, res) {
     var datasetKey = 'userAID:' + req.params.AID;
 
     client.get(datasetKey, function (err, rep) {
-        
+
         if (rep) {
             var userdata = JSON.parse(rep);
             var url = "http://5.199.129.74:81/user/" + userdata.username;
@@ -501,14 +513,14 @@ app.post('/place', jsonParser, paperwork.accept(jsonplaceaccept), function (req,
 
     geocoder.reverseGeocode(newPlace.latitude, newPlace.longitude, function (err, data) {
         var address = data.results[0].formatted_address;
-        var ad = "";
+        var plz = "";
         var placename = "";
         var count = 0;
         var countkomma = 0;
         //Adress nach Postleitzahl filtern 
         for (var i = 0; i < address.length; i++) {
             if (count >= 2 && count < 7) {
-                ad = ad + address[i];
+                plz = plz + address[i];
                 count++;
             }
             if (count == 1) {
@@ -529,16 +541,80 @@ app.post('/place', jsonParser, paperwork.accept(jsonplaceaccept), function (req,
                 count++;
             }
         }
-        var datasetKey = 'place:' + ad;
-        newPlace.plz = ad;
+        var datasetKey = 'place:' + plz;
+        newPlace.plz = plz;
         newPlace.placename = placename;
         client.exists(datasetKey, function (err, rep) {
             if (rep == 1) {
-                res.status(400).json(newPlace);
-            } else {
-                client.set(datasetKey, JSON.stringify(newPlace), function (err, rep) { //user in Datenbank speichern
+                //wenn der Ort schon angelegt wurde
+                  client.get('user:' + newPlace.username, function (err, data) {
+                        var userData = JSON.parse(data);
+                        console.log(userData.currentPLZ);
+                        console.log(plz);
 
-                    res.status(200).json(newPlace);
+                        if (userData.currentPLZ == null) {
+                            userData.currentPLZ = plz;
+                            client.set('user:' + newPlace.username, JSON.stringify(userData), function (err2, rep2) {
+                                var userPlaceData = {};
+                                userPlaceData.username = newPlace.username;
+                                userPlaceData.fcmID = userData.fcmID;
+                                client.set('placeuser:' + plz + 'user:' + newPlace.username, JSON.stringify(userPlaceData), function (err3, rep3) {
+                                    res.status(200).json(userPlaceData);
+                                });
+                            });
+                        } else if (userData.currentPLZ == plz) {
+                            //wenn die alte plz mit der neuen überein stimmt
+                            res.status(200).json("Die PLZ hat sich nicht geändert!");
+                        } else {
+                            //wenn die alte plz nicht mit der neuen überein stimmt
+                            client.del('placeuser:' + userData.currentPLZ + 'user:' + newPlace.username, function (err3, rep3) {
+                                userData.currentPLZ = plz;
+                                client.set('user:' + newPlace.username, JSON.stringify(userData), function (err2, rep2) {
+                                    var userPlaceData = {};
+                                    userPlaceData.username = newPlace.username;
+                                    userPlaceData.fcmID = userData.fcmID;
+                                    client.set('placeuser:' + plz + 'user:' + newPlace.username, JSON.stringify(userPlaceData), function (err3, rep3) {
+                                        res.status(200).json(userPlaceData);
+                                    });
+                                });
+                            });
+                        }
+                    });
+
+            } else {
+                //Der Ort wird neu angelegt 
+                client.set(datasetKey, JSON.stringify(newPlace), function (err, rep) { //user in Datenbank speichern
+                    client.get('user:' + newPlace.username, function (err, data) {
+                        var userData = JSON.parse(data);
+                        console.log(userData.currentPLZ);
+                        console.log(plz);
+
+                        if (userData.currentPLZ == null) {
+                            userData.currentPLZ = plz;
+                            client.set('user:' + newPlace.username, JSON.stringify(userData), function (err2, rep2) {
+                                var userPlaceData = {};
+                                userPlaceData.username = newPlace.username;
+                                userPlaceData.fcmID = userData.fcmID;
+                                client.set('placeuser:' + plz + 'user:' + newPlace.username, JSON.stringify(userPlaceData), function (err3, rep3) {
+                                    res.status(200).json(userPlaceData);
+                                });
+                            });
+                        
+                        } else {
+                            //wenn die alte plz nicht mit der neuen überein stimmt
+                            client.del('placeuser:' + userData.currentPLZ + 'user:' + newPlace.username, function (err3, rep3) {
+                                userData.currentPLZ = plz;
+                                client.set('user:' + newPlace.username, JSON.stringify(userData), function (err2, rep2) {
+                                    var userPlaceData = {};
+                                    userPlaceData.username = newPlace.username;
+                                    userPlaceData.fcmID = userData.fcmID;
+                                    client.set('placeuser:' + plz + 'user:' + newPlace.username, JSON.stringify(userPlaceData), function (err3, rep3) {
+                                        res.status(200).json(userPlaceData);
+                                    });
+                                });
+                            });
+                        }
+                    });
                 });
             }
         });
@@ -565,26 +641,9 @@ app.get('/place', jsonParser, function (req, res) {
     })
 });
 
-app.post('/place/:PLZ/user', jsonParser, paperwork.accept(jsonplaceuseraccept), function (req, res) {
-
-    var newUser = req.body; // Body beinhaltet geparstes JSON-Objekt
-
-    var datasetKey = 'placeuser:' + req.params.PLZ + 'user:' + newUser.username;
-
-    client.exists(datasetKey, function (err, rep) {
-        if (rep == 1) {
-            res.status(400).json("Der User ist schon in dem Ort eingetragen!");
-        } else {
-            client.set(datasetKey, JSON.stringify(newUser), function (err, rep) { //user in Datenbank speichern
-
-                res.status(200).json(newUser);
-            })
-        }
-    });
-});
 
 app.get('/place/:PLZ/user', jsonParser, function (req, res) {
-    client.keys('placeuser:'+req.params.PLZ+'user:*', function (err, rep) {
+    client.keys('placeuser:' + req.params.PLZ + 'user:*', function (err, rep) {
 
         if (rep.length == 0) {
             res.status(404).json([]);
@@ -602,6 +661,27 @@ app.get('/place/:PLZ/user', jsonParser, function (req, res) {
         }
     })
 });
+app.delete('/place/:PLZ/user/:USERNAME', jsonParser, function (req, res) {
+    var datasetKey = 'placeuser:' + req.params.PLZ + 'user:' + req.params.PLZ;
+
+    client.exists(datasetKey, function (err, rep) {
+        if (rep == 1) {
+            var username;
+
+            client.get(datasetKey, function (err, rep) {
+                username = JSON.parse(rep);
+            });
+
+            client.del(datasetKey, function (err, rep) {
+
+                res.status(200).json('Der User : '+username.username+' wurde gelöscht aus der PLZ-Gruppe: '+req.params.PLZ+'gelöscht!');
+            })
+        } else {
+            res.status(404).json('Der User war nicht in der Orstgruppe gelistet');
+        }
+
+    });
+});
 
 
-app.listen(81);
+app.listen(1234);
