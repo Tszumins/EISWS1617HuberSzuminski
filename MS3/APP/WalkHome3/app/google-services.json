@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "554800327218",
+    "firebase_url": "https://walkhome-5ab0a.firebaseio.com",
+    "project_id": "walkhome-5ab0a",
+    "storage_bucket": "walkhome-5ab0a.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:554800327218:android:10c889c819198e23",
+        "android_client_info": {
+          "package_name": "de.walkhome.walkhome"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "554800327218-nscd6dlgiijjm34q2kp5nqpaqkemrhaj.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDj7FtSTetNzrZByC1QBuggP2XBIjYlh5I"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
