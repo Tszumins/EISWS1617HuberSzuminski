@@ -44,11 +44,6 @@ var jsonplaceaccept = {
     'username': String
 }
 
-var jsonplaceuseraccept = {
-    'username': String,
-    'fcmID': String
-}
-
 var jsonuseralarmaccept = {
     'latitude': paperwork.optional(Number),
     'longitude': paperwork.optional(Number),
@@ -342,12 +337,17 @@ app.put('/user/:USERNAME/alarm', jsonParser, paperwork.accept(jsonuseralarmaccep
     client.exists(datasetKey, function (err, rep) {
 
         if (rep == 1) {
-
+            client.get(datasetKey,function(error,data){ 
+            var olddata = JSON.parse(data);
+            if(newData.status == null){
+                newData.status = olddata.status;
+            }
             newData.username = req.params.USERNAME;
 
             client.set(datasetKey, JSON.stringify(newData), function (err, rep) {
                 res.status(200).json(newData);
             });
+                });
         } else {
             res.status(404).json('Alarm wurde nicht angelegt!');
         }
@@ -549,8 +549,7 @@ app.post('/place', jsonParser, paperwork.accept(jsonplaceaccept), function (req,
                 //wenn der Ort schon angelegt wurde
                   client.get('user:' + newPlace.username, function (err, data) {
                         var userData = JSON.parse(data);
-                        console.log(userData.currentPLZ);
-                        console.log(plz);
+                    
 
                         if (userData.currentPLZ == null) {
                             userData.currentPLZ = plz;
@@ -586,9 +585,7 @@ app.post('/place', jsonParser, paperwork.accept(jsonplaceaccept), function (req,
                 client.set(datasetKey, JSON.stringify(newPlace), function (err, rep) { //user in Datenbank speichern
                     client.get('user:' + newPlace.username, function (err, data) {
                         var userData = JSON.parse(data);
-                        console.log(userData.currentPLZ);
-                        console.log(plz);
-
+                      
                         if (userData.currentPLZ == null) {
                             userData.currentPLZ = plz;
                             client.set('user:' + newPlace.username, JSON.stringify(userData), function (err2, rep2) {
@@ -684,4 +681,4 @@ app.delete('/place/:PLZ/user/:USERNAME', jsonParser, function (req, res) {
 });
 
 
-app.listen(1234);
+app.listen(81);

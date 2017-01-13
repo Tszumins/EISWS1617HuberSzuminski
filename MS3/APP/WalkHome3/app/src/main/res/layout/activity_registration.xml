@@ -120,7 +120,7 @@
                 android:inputType="textPersonName"
                 android:ems="10"
                 android:id="@+id/editText_telefon"
-                android:hint="Tel. Nummer" />
+                android:hint="In Form: 01XXXXXXXXX" />
 
             <Button
                 android:text="registrieren"

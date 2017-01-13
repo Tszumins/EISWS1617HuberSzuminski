@@ -3,6 +3,7 @@ package de.walkhome.walkhome;
 import android.app.ProgressDialog;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
@@ -21,14 +22,21 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AlertDialog;
+import android.support.v7.view.ContextThemeWrapper;
+import android.text.format.Time;
+import android.util.Log;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 import de.walkhome.walkhome.LocationService.LocalBinder;
+import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.RequestBody;
 import okhttp3.Response;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -67,6 +75,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     Button btnSettings;
     Button btnContacts;
     Button btnCancel;
+    Button btnAlarm;
+    Button btnAngekommen;
+
     boolean followUserGPS = true;
     boolean btnFindPathaktiv = true;
 
@@ -86,6 +97,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     boolean isBound = false;
     LocationService lS;
     String username;
+    public static final MediaType JSON
+            = MediaType.parse("application/json; charset=utf-8");
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -100,6 +113,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         etDestination = (EditText) findViewById(R.id.texteditZiel);
         btnContacts = (Button) findViewById(R.id.buttonKontakte);
         btnCancel = (Button) findViewById(R.id.buttonAbbrechen);
+        btnAlarm = (Button) findViewById(R.id.buttonAlarm);
+        btnAngekommen = (Button) findViewById(R.id.buttonAngekommen);
 
         btnSettings.setOnClickListener(new View.OnClickListener(){
             @Override
@@ -185,6 +200,101 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }catch(Exception e ){
             Toast.makeText(this,"FEHLER!",Toast.LENGTH_SHORT);
         }
+
+        btnAngekommen.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                //Angekommen an den server senden
+
+                Time zeit = new Time();
+                zeit.setToNow();
+                HttpRestPut putlocation = new HttpRestPut();
+                putlocation.execute("http://5.199.129.74:81/user/"+username+"/alarm", "{\"time\":\""+zeit.format("%H:%M").toString()+"\",\"latitude\":"+mLastLocation.getLatitude()+",\"longitude\":"+mLastLocation.getLongitude()+",\"status\":\"angekommen\"}");
+
+                Toast.makeText(getApplicationContext(),"Angekommen",Toast.LENGTH_SHORT);
+
+                followUserGPS = true;
+                btnFindPathaktiv = true;
+                btnFindPath.setText("Route suchen");
+                btnFindPath.getBackground().setColorFilter(Color.parseColor("#4eb9ff"), PorterDuff.Mode.DARKEN);
+
+                if (originMarkers != null) {
+                    for (Marker marker : originMarkers) {
+                        marker.remove();
+                    }
+                }
+
+                if (destinationMarkers != null) {
+                    for (Marker marker : destinationMarkers) {
+                        marker.remove();
+                    }
+                }
+
+                if (polylinePaths != null) {
+                    for (Polyline polyline:polylinePaths ) {
+                        polyline.remove();
+                    }
+                }
+
+                allpoints.clear();
+                lS.allpoints.clear();
+                dlat.clear();
+                dlon.clear();
+
+                etDestination.setText("");
+                btnCancel.setVisibility(View.GONE);
+            }
+        });
+
+        btnAlarm.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                                //NACHFRAGE
+                                AlertDialog alertDialog = new AlertDialog.Builder(new ContextThemeWrapper(getApplication(), R.style.dialog))
+                                        .setTitle("WalkHome")
+                                        .setMessage("Wollen Sie den Alarm wirklich absenden?")
+                                        .setNegativeButton("Nein!", new DialogInterface.OnClickListener() {
+                                            public void onClick(DialogInterface dialog, int which) {
+                                                counterSameDistance = 3;
+                                            }
+                                        })
+                                        .setPositiveButton("Ja!", new DialogInterface.OnClickListener() {
+                                            public void onClick(DialogInterface dialog, int which) {
+                                                //ALARM SENDEN
+
+                                                Time zeit = new Time();
+                                                zeit.setToNow();
+                                                HttpRestPut putlocation = new HttpRestPut();
+                                                putlocation.execute("http://5.199.129.74:81/user/"+username+"/alarm", "{\"time\":\""+zeit.format("%H:%M").toString()+"\",\"latitude\":"+mLastLocation.getLatitude()+",\"longitude\":"+mLastLocation.getLongitude()+",\"status\":\"Alarm ausgelöst\"}");
+                                                //ANZEIGEN DASS DER ALARM AUSGELÖST WURDE!!!!!!!!!!!!
+                                                AlertDialog alertDialog = new AlertDialog.Builder(new ContextThemeWrapper(getApplication(), R.style.dialog))
+                                                        .setTitle("WalkHome")
+                                                        .setMessage("Alarm wurde ausgelöst! Wollen Sie den Alarm zurücknehmen?")
+                                                        .setPositiveButton("Ja!", new DialogInterface.OnClickListener() {
+                                                            public void onClick(DialogInterface dialog, int which) {
+                                                                //ALARM ZURÜCKNEHMEN
+
+                                                                Time zeit = new Time();
+                                                                zeit.setToNow();
+                                                                HttpRestPut putlocation = new HttpRestPut();
+                                                                putlocation.execute("http://5.199.129.74:81/user/"+username+"/alarm", "{\"time\":\""+zeit.format("%H:%M").toString()+"\",\"latitude\":"+mLastLocation.getLatitude()+",\"longitude\":"+mLastLocation.getLongitude()+",\"status\":\"Alarm zurückgenommen\"}");
+                                                                counterSameDistance = 3;
+                                                            }
+                                                        })
+                                                        .create();
+
+                                                alertDialog.getWindow().setType(WindowManager.LayoutParams.TYPE_SYSTEM_ERROR);
+                                                alertDialog.show();
+                                            }
+                                        })
+                                        .create();
+
+                                alertDialog.getWindow().setType(WindowManager.LayoutParams.TYPE_SYSTEM_ERROR);
+                                alertDialog.show();
+
+            }
+        });
 
     }
 
@@ -607,6 +717,39 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
         }, 1000);
 
+    }
+    public class HttpRestPut  extends AsyncTask<String, Void, String> {
+
+        OkHttpClient client = new OkHttpClient();
+        String userDaten;
+
+        String post(String url, String json) throws IOException {
+
+            RequestBody body = RequestBody.create(JSON, json);
+            Request request = new Request.Builder()
+                    .url(url)
+                    .put(body)
+                    .build();
+            Response response = client.newCall(request).execute();
+            return response.body().string();
+        }
+
+        @Override
+        protected String doInBackground(String... params) {
+            try {
+                userDaten = post(params[0], params[1]);
+
+            } catch (Exception e) {
+                userDaten = e.toString();
+            }
+
+            return userDaten;
+        }
+
+        @Override
+        protected void onPostExecute(String res) {
+            Log.e("Mapsactivity:","ServerantwortPUT:" + res);
+        }
     }
 
 }

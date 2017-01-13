@@ -79,7 +79,8 @@
                 android:inputType="textPersonName"
                 android:ems="10"
                 android:id="@+id/et_putVorname"
-                android:hint="Vorname" />
+                android:hint="Vorname"
+                android:textSize="14sp" />
 
             <TextView
                 android:text="Nachname"
@@ -95,7 +96,8 @@
                 android:inputType="textPersonName"
                 android:ems="10"
                 android:id="@+id/et_putNachname"
-                android:hint="Nachname" />
+                android:hint="Nachname"
+                android:textSize="14sp" />
 
             <TextView
                 android:text="Mobilnummer"
@@ -111,7 +113,8 @@
                 android:inputType="textPersonName"
                 android:ems="10"
                 android:id="@+id/et_putNummer"
-                android:hint="Nummer" />
+                android:hint="Nummer"
+                android:textSize="14sp" />
 
             <Button
                 android:text="Ändern"
@@ -158,21 +161,21 @@
             android:layout_weight="0.8">
 
             <Switch
-                android:text="Leute im Umkreis"
+                android:text="Leute im Umkreis (werden bei einem Notfall  kontaktiert)"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:id="@+id/sw_PeopleAround"
                 android:textColor="#222222" />
 
             <Switch
-                android:text="Routen Abweichung"
+                android:text="Routen Abweichung (Automatischer Alarm bei Abkommen von Route)"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:id="@+id/sw_RouteTolerance"
                 android:textColor="#222222" />
 
             <Switch
-                android:text="Kopfhöhrer Reisleine"
+                android:text='Kopfhörer Reißleine (Alarm bei "rausziehen" der Kopfhörer)'
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:id="@+id/sw_Headphone"

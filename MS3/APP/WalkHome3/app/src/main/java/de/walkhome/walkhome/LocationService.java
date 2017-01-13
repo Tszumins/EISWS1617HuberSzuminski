@@ -73,7 +73,7 @@ public class LocationService extends Service  {
         }
 
         @Override
-        public void onLocationChanged(Location location) {
+        public void onLocationChanged(final Location location) {
             Log.e(TAG, "onLocationChanged: " + location);
             lLocation = mLastLocation;
 
@@ -81,20 +81,62 @@ public class LocationService extends Service  {
 
 
                 int oldnewdistance = entfernungBerechnen(location.getLatitude(), location.getLongitude(), mLastLocation.getLatitude(), mLastLocation.getLongitude());
-                if (oldnewdistance < 10) {
+                if (oldnewdistance < 20) {
                     counterSameDistance++;
-                    if (counterSameDistance == 7) {
+
+                    if (counterSameDistance == 2) {
                         AlertDialog alertDialog = new AlertDialog.Builder(new ContextThemeWrapper(getApplication(), R.style.dialog))
                                 .setTitle("WalkHome")
                                 .setMessage("Ist alles in Ordnung?")
                                 .setPositiveButton("Ja", new DialogInterface.OnClickListener() {
                                     public void onClick(DialogInterface dialog, int which) {
-                                        counterSameDistance = 8;
+                                        counterSameDistance = 3;
                                     }
                                 })
                                 .setNegativeButton("Nein", new DialogInterface.OnClickListener() {
                                     public void onClick(DialogInterface dialog, int which) {
-                                        //sende Alarm an Notfallkontakte
+                                    //ERNEUTE NACHFRAGE
+                                        AlertDialog alertDialog = new AlertDialog.Builder(new ContextThemeWrapper(getApplication(), R.style.dialog))
+                                                .setTitle("WalkHome")
+                                                .setMessage("Wollen Sie den Alarm wirklich absenden?")
+                                                .setNegativeButton("Nein!", new DialogInterface.OnClickListener() {
+                                                    public void onClick(DialogInterface dialog, int which) {
+                                                        counterSameDistance = 3;
+                                                    }
+                                                })
+                                                .setPositiveButton("Ja!", new DialogInterface.OnClickListener() {
+                                                    public void onClick(DialogInterface dialog, int which) {
+                                                        //ALARM SENDEN
+
+                                                        Time zeit = new Time();
+                                                        zeit.setToNow();
+                                                        HttpRestPut putlocation = new HttpRestPut();
+                                                        putlocation.execute("http://5.199.129.74:81/user/"+userName+"/alarm", "{\"time\":\""+zeit.format("%H:%M").toString()+"\",\"latitude\":"+location.getLatitude()+",\"longitude\":"+location.getLongitude()+",\"status\":\"Alarm ausgelöst\"}");
+                                                        //ANZEIGEN DASS DER ALARM AUSGELÖST WURDE!!!!!!!!!!!!
+                                                        AlertDialog alertDialog = new AlertDialog.Builder(new ContextThemeWrapper(getApplication(), R.style.dialog))
+                                                                .setTitle("WalkHome")
+                                                                .setMessage("Alarm wurde ausgelöst! Wollen Sie den Alarm zurücknehmen?")
+                                                                .setPositiveButton("Ja!", new DialogInterface.OnClickListener() {
+                                                                    public void onClick(DialogInterface dialog, int which) {
+                                                                        //ALARM ZURÜCKNEHMEN
+
+                                                                        Time zeit = new Time();
+                                                                        zeit.setToNow();
+                                                                        HttpRestPut putlocation = new HttpRestPut();
+                                                                        putlocation.execute("http://5.199.129.74:81/user/"+userName+"/alarm", "{\"time\":\""+zeit.format("%H:%M").toString()+"\",\"latitude\":"+location.getLatitude()+",\"longitude\":"+location.getLongitude()+",\"status\":\"Alarm zurückgenommen\"}");
+                                                                        counterSameDistance = 3;
+                                                                    }
+                                                                })
+                                                                .create();
+
+                                                        alertDialog.getWindow().setType(WindowManager.LayoutParams.TYPE_SYSTEM_ERROR);
+                                                        alertDialog.show();
+                                                    }
+                                                })
+                                                .create();
+
+                                        alertDialog.getWindow().setType(WindowManager.LayoutParams.TYPE_SYSTEM_ERROR);
+                                        alertDialog.show();
                                     }
                                 })
                                 .create();
@@ -135,12 +177,53 @@ public class LocationService extends Service  {
                                         .setMessage("Ist alles in Ordnung?")
                                         .setPositiveButton("Ja", new DialogInterface.OnClickListener() {
                                             public void onClick(DialogInterface dialog, int which) {
-                                                counterSameDistance = 8;
+                                                counterSameDistance = 3;
                                             }
                                         })
                                         .setNegativeButton("Nein", new DialogInterface.OnClickListener() {
                                             public void onClick(DialogInterface dialog, int which) {
-                                                //sende Alarm an Notfallkontakte
+                                                //ERNEUTE NACHFRAGE
+                                                AlertDialog alertDialog = new AlertDialog.Builder(new ContextThemeWrapper(getApplication(), R.style.dialog))
+                                                        .setTitle("WalkHome")
+                                                        .setMessage("Wollen Sie den Alarm wirklich absenden?")
+                                                        .setNegativeButton("Nein!", new DialogInterface.OnClickListener() {
+                                                            public void onClick(DialogInterface dialog, int which) {
+                                                                counterSameDistance = 3;
+                                                            }
+                                                        })
+                                                        .setPositiveButton("Ja!", new DialogInterface.OnClickListener() {
+                                                            public void onClick(DialogInterface dialog, int which) {
+                                                                //ALARM SENDEN
+
+                                                                Time zeit = new Time();
+                                                                zeit.setToNow();
+                                                                HttpRestPut putlocation = new HttpRestPut();
+                                                                putlocation.execute("http://5.199.129.74:81/user/"+userName+"/alarm", "{\"time\":\""+zeit.format("%H:%M").toString()+"\",\"latitude\":"+location.getLatitude()+",\"longitude\":"+location.getLongitude()+",\"status\":\"Alarm ausgelöst\"}");
+                                                                //ANZEIGEN DASS DER ALARM AUSGELÖST WURDE!!!!!!!!!!!!
+                                                                AlertDialog alertDialog = new AlertDialog.Builder(new ContextThemeWrapper(getApplication(), R.style.dialog))
+                                                                        .setTitle("WalkHome")
+                                                                        .setMessage("Alarm wurde ausgelöst! Wollen Sie den Alarm zurücknehmen?")
+                                                                        .setPositiveButton("Ja!", new DialogInterface.OnClickListener() {
+                                                                            public void onClick(DialogInterface dialog, int which) {
+                                                                                //ALARM ZURÜCKNEHMEN
+
+                                                                                Time zeit = new Time();
+                                                                                zeit.setToNow();
+                                                                                HttpRestPut putlocation = new HttpRestPut();
+                                                                                putlocation.execute("http://5.199.129.74:81/user/"+userName+"/alarm", "{\"time\":\""+zeit.format("%H:%M").toString()+"\",\"latitude\":"+location.getLatitude()+",\"longitude\":"+location.getLongitude()+",\"status\":\"Alarm zurückgenommen\"}");
+                                                                                counterSameDistance = 3;
+                                                                            }
+                                                                        })
+                                                                        .create();
+
+                                                                alertDialog.getWindow().setType(WindowManager.LayoutParams.TYPE_SYSTEM_ERROR);
+                                                                alertDialog.show();
+                                                            }
+                                                        })
+                                                        .create();
+
+                                                alertDialog.getWindow().setType(WindowManager.LayoutParams.TYPE_SYSTEM_ERROR);
+                                                alertDialog.show();
                                             }
                                         })
                                         .create();
@@ -306,10 +389,7 @@ public class LocationService extends Service  {
 
 
         HttpRestPut putlocation = new HttpRestPut();
-        String url = "http://5.199.129.74:81/user/"+userName+"/alarm";
-        String payload = "{\"time\":\""+zeit.format("%H:%M").toString()+"\",\"latitude\":"+lat+",\"longitude\":"+lon+"}";
-        Log.e(TAG, "url::" + url);
-        Log.e(TAG, "payload::" + payload);
+
         putlocation.execute("http://5.199.129.74:81/user/"+userName+"/alarm", "{\"time\":\""+zeit.format("%H:%M").toString()+"\",\"latitude\":"+lat+",\"longitude\":"+lon+"}");
     }
        /*----------------------------------- PUT (contactDaten werden aktualisiert )------------------------------
