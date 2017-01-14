@@ -95,12 +95,16 @@ public class Registrieren extends Activity {
             HttpRestPost restp = new HttpRestPost();
             usernameSpeicher = edt_username.getText().toString();
 
+
             restp.execute("http://5.199.129.74:81/user", "{\"androidID\":\""+ androidID +"\",\"username\":\""+ edt_username.getText().toString()+"\",\"nachname\":\""+ edt_name.getText().toString()+"\",\"vorname\":\""+ edt_vorname.getText().toString() +"\",\"telefonnummer\":\""+ edt_telefon.getText().toString()+"\",\"status\":\"zuHause\",\"fcmID\":\"djkjkjdkjkdj\"}","post");
+
+            btn_registration.setEnabled(false);
 
         }else{
             Toast.makeText(this,"Bitte alle Felder korrekt ausfüllen!", Toast.LENGTH_SHORT).show();
         }}catch(Exception e){
-            edt_vorname.append(e.toString());
+            Toast.makeText(this,"Fehler!", Toast.LENGTH_SHORT).show();
+            btn_registration.setEnabled(true);
         }
     }
 
@@ -148,6 +152,7 @@ public class Registrieren extends Activity {
         protected void onPostExecute(String res) {
             if(res.contains("Der Username ist schon vergeben!")){
                 Toast.makeText(getApplicationContext() ,"Der Nutzername ist schon vergeben!", Toast.LENGTH_LONG).show();
+                btn_registration.setEnabled(true);
             }else{
                 onpostex();
             }

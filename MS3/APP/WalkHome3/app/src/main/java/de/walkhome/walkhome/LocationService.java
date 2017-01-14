@@ -1,7 +1,5 @@
 package de.walkhome.walkhome;
 
-import android.app.Activity;
-import android.app.Dialog;
 import android.app.Service;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -9,12 +7,15 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationManager;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
-import android.os.StrictMode;
+import android.os.Vibrator;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
@@ -22,8 +23,6 @@ import android.support.v7.view.ContextThemeWrapper;
 import android.text.format.Time;
 import android.util.Log;
 import android.view.WindowManager;
-import android.widget.Toast;
-
 
 import com.google.android.gms.maps.model.LatLng;
 
@@ -48,6 +47,7 @@ public class LocationService extends Service  {
     public Boolean isActivated = false;
     public String contactName;
     public String userName;
+    Vibrator vibrationNotification;
 
     Location lLocation;
     public static final MediaType JSON
@@ -77,7 +77,7 @@ public class LocationService extends Service  {
             Log.e(TAG, "onLocationChanged: " + location);
             lLocation = mLastLocation;
 
-            if(mLastLocation != null) {
+            if(mLastLocation != null && userName != null) {
 
 
                 int oldnewdistance = entfernungBerechnen(location.getLatitude(), location.getLongitude(), mLastLocation.getLatitude(), mLastLocation.getLongitude());
@@ -85,17 +85,24 @@ public class LocationService extends Service  {
                     counterSameDistance++;
 
                     if (counterSameDistance == 2) {
+
+                        //Vibrations Alarm Starten
+                        vibrationNotification = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+                        long[] pattern = {0, 800, 600};
+                        vibrationNotification.vibrate(pattern, 0);
                         AlertDialog alertDialog = new AlertDialog.Builder(new ContextThemeWrapper(getApplication(), R.style.dialog))
                                 .setTitle("WalkHome")
                                 .setMessage("Ist alles in Ordnung?")
                                 .setPositiveButton("Ja", new DialogInterface.OnClickListener() {
                                     public void onClick(DialogInterface dialog, int which) {
+                                        vibrationNotification.cancel();
                                         counterSameDistance = 3;
                                     }
                                 })
                                 .setNegativeButton("Nein", new DialogInterface.OnClickListener() {
                                     public void onClick(DialogInterface dialog, int which) {
                                     //ERNEUTE NACHFRAGE
+                                        vibrationNotification.cancel();
                                         AlertDialog alertDialog = new AlertDialog.Builder(new ContextThemeWrapper(getApplication(), R.style.dialog))
                                                 .setTitle("WalkHome")
                                                 .setMessage("Wollen Sie den Alarm wirklich absenden?")
@@ -106,31 +113,40 @@ public class LocationService extends Service  {
                                                 })
                                                 .setPositiveButton("Ja!", new DialogInterface.OnClickListener() {
                                                     public void onClick(DialogInterface dialog, int which) {
-                                                        //ALARM SENDEN
 
-                                                        Time zeit = new Time();
-                                                        zeit.setToNow();
-                                                        HttpRestPut putlocation = new HttpRestPut();
-                                                        putlocation.execute("http://5.199.129.74:81/user/"+userName+"/alarm", "{\"time\":\""+zeit.format("%H:%M").toString()+"\",\"latitude\":"+location.getLatitude()+",\"longitude\":"+location.getLongitude()+",\"status\":\"Alarm ausgelöst\"}");
-                                                        //ANZEIGEN DASS DER ALARM AUSGELÖST WURDE!!!!!!!!!!!!
-                                                        AlertDialog alertDialog = new AlertDialog.Builder(new ContextThemeWrapper(getApplication(), R.style.dialog))
-                                                                .setTitle("WalkHome")
-                                                                .setMessage("Alarm wurde ausgelöst! Wollen Sie den Alarm zurücknehmen?")
-                                                                .setPositiveButton("Ja!", new DialogInterface.OnClickListener() {
-                                                                    public void onClick(DialogInterface dialog, int which) {
-                                                                        //ALARM ZURÜCKNEHMEN
+                                                        ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+                                                        if (connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE).getState() == NetworkInfo.State.CONNECTED ||
+                                                                connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI).getState() == NetworkInfo.State.CONNECTED) {
 
-                                                                        Time zeit = new Time();
-                                                                        zeit.setToNow();
-                                                                        HttpRestPut putlocation = new HttpRestPut();
-                                                                        putlocation.execute("http://5.199.129.74:81/user/"+userName+"/alarm", "{\"time\":\""+zeit.format("%H:%M").toString()+"\",\"latitude\":"+location.getLatitude()+",\"longitude\":"+location.getLongitude()+",\"status\":\"Alarm zurückgenommen\"}");
-                                                                        counterSameDistance = 3;
-                                                                    }
-                                                                })
-                                                                .create();
+                                                            //ALARM SENDEN
+                                                            Time zeit = new Time();
+                                                            zeit.setToNow();
+                                                            HttpRestPut putlocation = new HttpRestPut();
+                                                            putlocation.execute("http://5.199.129.74:81/user/" + userName + "/alarm", "{\"time\":\"" + zeit.format("%H:%M").toString() + "\",\"latitude\":" + location.getLatitude() + ",\"longitude\":" + location.getLongitude() + ",\"status\":\"Alarm ausgelöst\"}");
+                                                            //ANZEIGEN DASS DER ALARM AUSGELÖST WURDE!!!!!!!!!!!!
+                                                            AlertDialog alertDialog = new AlertDialog.Builder(new ContextThemeWrapper(getApplication(), R.style.dialog))
+                                                                    .setTitle("WalkHome")
+                                                                    .setMessage("Alarm wurde ausgelöst! Wollen Sie den Alarm zurücknehmen?")
+                                                                    .setPositiveButton("Ja!", new DialogInterface.OnClickListener() {
+                                                                        public void onClick(DialogInterface dialog, int which) {
+                                                                            //ALARM ZURÜCKNEHMEN
 
-                                                        alertDialog.getWindow().setType(WindowManager.LayoutParams.TYPE_SYSTEM_ERROR);
-                                                        alertDialog.show();
+                                                                            Time zeit = new Time();
+                                                                            zeit.setToNow();
+                                                                            HttpRestPut putlocation = new HttpRestPut();
+                                                                            putlocation.execute("http://5.199.129.74:81/user/" + userName + "/alarm", "{\"time\":\"" + zeit.format("%H:%M").toString() + "\",\"latitude\":" + location.getLatitude() + ",\"longitude\":" + location.getLongitude() + ",\"status\":\"Alarm zurückgenommen\"}");
+                                                                            counterSameDistance = 3;
+                                                                        }
+                                                                    })
+                                                                    .create();
+
+                                                            alertDialog.getWindow().setType(WindowManager.LayoutParams.TYPE_SYSTEM_ERROR);
+                                                            alertDialog.show();
+                                                        }
+                                                        else{
+                                                            //Notruf waehlen
+                                                            startActivity( new Intent(Intent.ACTION_DIAL, Uri.parse("tel:112")));
+                                                        }
                                                     }
                                                 })
                                                 .create();
@@ -172,17 +188,26 @@ public class LocationService extends Service  {
 
                             counterAbweichung++;
                             if(counterAbweichung == 2) { //wenn die position 2 mal nicht auf der route war wird eine Abfrage an den User ausgelöst
+
+                                //Vibrations Alarm Starten
+                                vibrationNotification = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+                                long[] pattern = {0, 800, 600};
+                                vibrationNotification.vibrate(pattern, 0);
+
                                 AlertDialog alertDialog = new AlertDialog.Builder(new ContextThemeWrapper(getApplication(), R.style.dialog))
                                         .setTitle("WalkHome")
                                         .setMessage("Ist alles in Ordnung?")
                                         .setPositiveButton("Ja", new DialogInterface.OnClickListener() {
                                             public void onClick(DialogInterface dialog, int which) {
                                                 counterSameDistance = 3;
+                                                vibrationNotification.cancel();
                                             }
                                         })
                                         .setNegativeButton("Nein", new DialogInterface.OnClickListener() {
                                             public void onClick(DialogInterface dialog, int which) {
                                                 //ERNEUTE NACHFRAGE
+
+                                                vibrationNotification.cancel();
                                                 AlertDialog alertDialog = new AlertDialog.Builder(new ContextThemeWrapper(getApplication(), R.style.dialog))
                                                         .setTitle("WalkHome")
                                                         .setMessage("Wollen Sie den Alarm wirklich absenden?")
@@ -195,29 +220,40 @@ public class LocationService extends Service  {
                                                             public void onClick(DialogInterface dialog, int which) {
                                                                 //ALARM SENDEN
 
-                                                                Time zeit = new Time();
-                                                                zeit.setToNow();
-                                                                HttpRestPut putlocation = new HttpRestPut();
-                                                                putlocation.execute("http://5.199.129.74:81/user/"+userName+"/alarm", "{\"time\":\""+zeit.format("%H:%M").toString()+"\",\"latitude\":"+location.getLatitude()+",\"longitude\":"+location.getLongitude()+",\"status\":\"Alarm ausgelöst\"}");
-                                                                //ANZEIGEN DASS DER ALARM AUSGELÖST WURDE!!!!!!!!!!!!
-                                                                AlertDialog alertDialog = new AlertDialog.Builder(new ContextThemeWrapper(getApplication(), R.style.dialog))
-                                                                        .setTitle("WalkHome")
-                                                                        .setMessage("Alarm wurde ausgelöst! Wollen Sie den Alarm zurücknehmen?")
-                                                                        .setPositiveButton("Ja!", new DialogInterface.OnClickListener() {
-                                                                            public void onClick(DialogInterface dialog, int which) {
-                                                                                //ALARM ZURÜCKNEHMEN
+                                                                //Internetverbindung Prüfen
+                                                                ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+                                                                if (connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE).getState() == NetworkInfo.State.CONNECTED ||
+                                                                        connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI).getState() == NetworkInfo.State.CONNECTED) {
 
-                                                                                Time zeit = new Time();
-                                                                                zeit.setToNow();
-                                                                                HttpRestPut putlocation = new HttpRestPut();
-                                                                                putlocation.execute("http://5.199.129.74:81/user/"+userName+"/alarm", "{\"time\":\""+zeit.format("%H:%M").toString()+"\",\"latitude\":"+location.getLatitude()+",\"longitude\":"+location.getLongitude()+",\"status\":\"Alarm zurückgenommen\"}");
-                                                                                counterSameDistance = 3;
-                                                                            }
-                                                                        })
-                                                                        .create();
+                                                                    Time zeit = new Time();
+                                                                    zeit.setToNow();
+                                                                    HttpRestPut putlocation = new HttpRestPut();
+                                                                    putlocation.execute("http://5.199.129.74:81/user/" + userName + "/alarm", "{\"time\":\"" + zeit.format("%H:%M").toString() + "\",\"latitude\":" + location.getLatitude() + ",\"longitude\":" + location.getLongitude() + ",\"status\":\"Alarm ausgelöst\"}");
+                                                                    //ANZEIGEN DASS DER ALARM AUSGELÖST WURDE!!!!!!!!!!!!
+                                                                    AlertDialog alertDialog = new AlertDialog.Builder(new ContextThemeWrapper(getApplication(), R.style.dialog))
+                                                                            .setTitle("WalkHome")
+                                                                            .setMessage("Alarm wurde ausgelöst! Wollen Sie den Alarm zurücknehmen?")
+                                                                            .setPositiveButton("Ja!", new DialogInterface.OnClickListener() {
+                                                                                public void onClick(DialogInterface dialog, int which) {
+                                                                                    //ALARM ZURÜCKNEHMEN
 
-                                                                alertDialog.getWindow().setType(WindowManager.LayoutParams.TYPE_SYSTEM_ERROR);
-                                                                alertDialog.show();
+                                                                                    Time zeit = new Time();
+                                                                                    zeit.setToNow();
+                                                                                    HttpRestPut putlocation = new HttpRestPut();
+                                                                                    putlocation.execute("http://5.199.129.74:81/user/" + userName + "/alarm", "{\"time\":\"" + zeit.format("%H:%M").toString() + "\",\"latitude\":" + location.getLatitude() + ",\"longitude\":" + location.getLongitude() + ",\"status\":\"Alarm zurückgenommen\"}");
+                                                                                    counterSameDistance = 3;
+                                                                                }
+                                                                            })
+                                                                            .create();
+
+                                                                    alertDialog.getWindow().setType(WindowManager.LayoutParams.TYPE_SYSTEM_ERROR);
+                                                                    alertDialog.show();
+                                                                }
+                                                                else{
+                                                                    //Notruf waehlen
+                                                                    startActivity( new Intent(Intent.ACTION_DIAL, Uri.parse("tel:112")));
+                                                                }
+
                                                             }
                                                         })
                                                         .create();

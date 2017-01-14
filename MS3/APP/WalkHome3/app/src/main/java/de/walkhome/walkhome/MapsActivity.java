@@ -11,11 +11,14 @@ import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.location.Location;
 import android.media.AudioManager;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.Vibrator;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -32,14 +35,9 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
-import de.walkhome.walkhome.LocationService.LocalBinder;
-import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
 
 import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
@@ -51,16 +49,20 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
-
-
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
+
+import de.walkhome.walkhome.LocationService.LocalBinder;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener, DirectionFinderListener {
@@ -80,6 +82,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     boolean followUserGPS = true;
     boolean btnFindPathaktiv = true;
+
+    Vibrator vibrationNotification;
 
     EditText etDestination;
     private List<Marker> originMarkers = new ArrayList<>();
@@ -250,6 +254,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             @Override
             public void onClick(View view) {
 
+                //Vibrations Alarm Starten
+                vibrationNotification = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+                long[] pattern = {0, 800, 600};
+                vibrationNotification.vibrate(pattern, 0);
+
                                 //NACHFRAGE
                                 AlertDialog alertDialog = new AlertDialog.Builder(new ContextThemeWrapper(getApplication(), R.style.dialog))
                                         .setTitle("WalkHome")
@@ -257,35 +266,47 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                         .setNegativeButton("Nein!", new DialogInterface.OnClickListener() {
                                             public void onClick(DialogInterface dialog, int which) {
                                                 counterSameDistance = 3;
+                                                vibrationNotification.cancel();
                                             }
                                         })
                                         .setPositiveButton("Ja!", new DialogInterface.OnClickListener() {
                                             public void onClick(DialogInterface dialog, int which) {
                                                 //ALARM SENDEN
+                                                //Internetverbindung Prüfen
+                                                ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+                                                if (connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE).getState() == NetworkInfo.State.CONNECTED ||
+                                                        connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI).getState() == NetworkInfo.State.CONNECTED) {
 
-                                                Time zeit = new Time();
-                                                zeit.setToNow();
-                                                HttpRestPut putlocation = new HttpRestPut();
-                                                putlocation.execute("http://5.199.129.74:81/user/"+username+"/alarm", "{\"time\":\""+zeit.format("%H:%M").toString()+"\",\"latitude\":"+mLastLocation.getLatitude()+",\"longitude\":"+mLastLocation.getLongitude()+",\"status\":\"Alarm ausgelöst\"}");
-                                                //ANZEIGEN DASS DER ALARM AUSGELÖST WURDE!!!!!!!!!!!!
-                                                AlertDialog alertDialog = new AlertDialog.Builder(new ContextThemeWrapper(getApplication(), R.style.dialog))
-                                                        .setTitle("WalkHome")
-                                                        .setMessage("Alarm wurde ausgelöst! Wollen Sie den Alarm zurücknehmen?")
-                                                        .setPositiveButton("Ja!", new DialogInterface.OnClickListener() {
-                                                            public void onClick(DialogInterface dialog, int which) {
-                                                                //ALARM ZURÜCKNEHMEN
 
-                                                                Time zeit = new Time();
-                                                                zeit.setToNow();
-                                                                HttpRestPut putlocation = new HttpRestPut();
-                                                                putlocation.execute("http://5.199.129.74:81/user/"+username+"/alarm", "{\"time\":\""+zeit.format("%H:%M").toString()+"\",\"latitude\":"+mLastLocation.getLatitude()+",\"longitude\":"+mLastLocation.getLongitude()+",\"status\":\"Alarm zurückgenommen\"}");
-                                                                counterSameDistance = 3;
-                                                            }
-                                                        })
-                                                        .create();
+                                                    Time zeit = new Time();
+                                                    zeit.setToNow();
+                                                    HttpRestPut putlocation = new HttpRestPut();
+                                                    putlocation.execute("http://5.199.129.74:81/user/" + username + "/alarm", "{\"time\":\"" + zeit.format("%H:%M").toString() + "\",\"latitude\":" + mLastLocation.getLatitude() + ",\"longitude\":" + mLastLocation.getLongitude() + ",\"status\":\"Alarm ausgelöst\"}");
+                                                    //ANZEIGEN DASS DER ALARM AUSGELÖST WURDE!!!!!!!!!!!!
+                                                    AlertDialog alertDialog = new AlertDialog.Builder(new ContextThemeWrapper(getApplication(), R.style.dialog))
+                                                            .setTitle("WalkHome")
+                                                            .setMessage("Alarm wurde ausgelöst! Wollen Sie den Alarm zurücknehmen?")
+                                                            .setPositiveButton("Ja!", new DialogInterface.OnClickListener() {
+                                                                public void onClick(DialogInterface dialog, int which) {
+                                                                    //ALARM ZURÜCKNEHMEN
+                                                                    vibrationNotification.cancel();
+                                                                    Time zeit = new Time();
+                                                                    zeit.setToNow();
+                                                                    HttpRestPut putlocation = new HttpRestPut();
+                                                                    putlocation.execute("http://5.199.129.74:81/user/" + username + "/alarm", "{\"time\":\"" + zeit.format("%H:%M").toString() + "\",\"latitude\":" + mLastLocation.getLatitude() + ",\"longitude\":" + mLastLocation.getLongitude() + ",\"status\":\"Alarm zurückgenommen\"}");
+                                                                    counterSameDistance = 3;
+                                                                }
+                                                            })
+                                                            .create();
 
-                                                alertDialog.getWindow().setType(WindowManager.LayoutParams.TYPE_SYSTEM_ERROR);
-                                                alertDialog.show();
+                                                    alertDialog.getWindow().setType(WindowManager.LayoutParams.TYPE_SYSTEM_ERROR);
+                                                    alertDialog.show();
+                                                }
+                                                else{
+
+                                                }
+
+
                                             }
                                         })
                                         .create();
@@ -680,6 +701,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         if(response.contains("Das Smartphone wurde noch nicht registriert!")){
             try{
+                final Handler ha=new Handler();
+                ha.postDelayed(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        if(lS.userName != null){
+                            lS.userName = null;
+                        }
+                    }
+                }, 1000);
                 Intent intent1 = new Intent(MapsActivity.this, Registrieren.class);
                 startActivity(intent1);}catch(Exception e ){
                 etDestination.append(e.toString());
