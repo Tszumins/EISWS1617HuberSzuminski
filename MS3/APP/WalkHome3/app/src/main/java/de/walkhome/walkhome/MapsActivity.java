@@ -104,6 +104,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public static final MediaType JSON
             = MediaType.parse("application/json; charset=utf-8");
 
+    final String hostUrl = "http://5.199.129.74:81";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
@@ -148,6 +150,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     followUserGPS = true;
                     btnFindPath.setText("navigiert...");
                     btnFindPathaktiv = true;
+                    btnCancel.setVisibility(View.GONE);
+
+                    Time zeit = new Time();
+                    zeit.setToNow();
+                    HttpRestPut putlocation = new HttpRestPut();
+                    putlocation.execute(hostUrl +"/user/"+username+"/alarm", "{\"time\":\""+zeit.format("%H:%M").toString()+"\",\"latitude\":"+mLastLocation.getLatitude()+",\"longitude\":"+mLastLocation.getLongitude()+",\"status\":\"unterwegs\"}");
                 }
             }
         });
@@ -200,7 +208,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         try {
             String androidID = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
             HttpRestGet restg = new HttpRestGet();
-            restg.execute("http://5.199.129.74:81/userAID/" + androidID);
+            restg.execute(hostUrl+"/userAID/" + androidID);
         }catch(Exception e ){
             Toast.makeText(this,"FEHLER!",Toast.LENGTH_SHORT);
         }
@@ -213,7 +221,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 Time zeit = new Time();
                 zeit.setToNow();
                 HttpRestPut putlocation = new HttpRestPut();
-                putlocation.execute("http://5.199.129.74:81/user/"+username+"/alarm", "{\"time\":\""+zeit.format("%H:%M").toString()+"\",\"latitude\":"+mLastLocation.getLatitude()+",\"longitude\":"+mLastLocation.getLongitude()+",\"status\":\"angekommen\"}");
+                putlocation.execute(hostUrl +"/user/"+username+"/alarm", "{\"time\":\""+zeit.format("%H:%M").toString()+"\",\"latitude\":"+mLastLocation.getLatitude()+",\"longitude\":"+mLastLocation.getLongitude()+",\"status\":\"angekommen\"}");
 
                 Toast.makeText(getApplicationContext(),"Angekommen",Toast.LENGTH_SHORT);
 
@@ -281,7 +289,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                                     Time zeit = new Time();
                                                     zeit.setToNow();
                                                     HttpRestPut putlocation = new HttpRestPut();
-                                                    putlocation.execute("http://5.199.129.74:81/user/" + username + "/alarm", "{\"time\":\"" + zeit.format("%H:%M").toString() + "\",\"latitude\":" + mLastLocation.getLatitude() + ",\"longitude\":" + mLastLocation.getLongitude() + ",\"status\":\"Alarm ausgelöst\"}");
+                                                    putlocation.execute(hostUrl +"/user/" + username + "/alarm", "{\"time\":\"" + zeit.format("%H:%M").toString() + "\",\"latitude\":" + mLastLocation.getLatitude() + ",\"longitude\":" + mLastLocation.getLongitude() + ",\"status\":\"Alarm ausgelöst\"}");
                                                     //ANZEIGEN DASS DER ALARM AUSGELÖST WURDE!!!!!!!!!!!!
                                                     AlertDialog alertDialog = new AlertDialog.Builder(new ContextThemeWrapper(getApplication(), R.style.dialog))
                                                             .setTitle("WalkHome")
@@ -293,7 +301,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                                                     Time zeit = new Time();
                                                                     zeit.setToNow();
                                                                     HttpRestPut putlocation = new HttpRestPut();
-                                                                    putlocation.execute("http://5.199.129.74:81/user/" + username + "/alarm", "{\"time\":\"" + zeit.format("%H:%M").toString() + "\",\"latitude\":" + mLastLocation.getLatitude() + ",\"longitude\":" + mLastLocation.getLongitude() + ",\"status\":\"Alarm zurückgenommen\"}");
+                                                                    putlocation.execute(hostUrl+ "/user/" + username + "/alarm", "{\"time\":\"" + zeit.format("%H:%M").toString() + "\",\"latitude\":" + mLastLocation.getLatitude() + ",\"longitude\":" + mLastLocation.getLongitude() + ",\"status\":\"Alarm zurückgenommen\"}");
                                                                     counterSameDistance = 3;
                                                                 }
                                                             })

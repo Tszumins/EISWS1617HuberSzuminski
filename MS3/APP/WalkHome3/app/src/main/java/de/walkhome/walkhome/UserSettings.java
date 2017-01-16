@@ -46,6 +46,8 @@ public class UserSettings extends Activity {
     public static final MediaType JSON
             = MediaType.parse("application/json; charset=utf-8");
 
+    final String hostUrl = "http://5.199.129.74:81";
+
     //SharedPreferences benoetigte Variablen
     public static final String MyPREFERENCES = "WalkHomeSettings" ;
     public static final String headphoneEnable = "headphoneEnable";
@@ -168,7 +170,7 @@ public class UserSettings extends Activity {
     void getUsername(){
         String androidID = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
         HttpRestGet getUserName = new HttpRestGet();
-        getUserName.execute("http://5.199.129.74:81/userAID/" + androidID);
+        getUserName.execute(hostUrl+"/userAID/" + androidID);
     }
 
     public class HttpRestGet  extends AsyncTask<String, Void, String> {
@@ -254,7 +256,7 @@ public class UserSettings extends Activity {
                 HttpRestput putUserdata = new HttpRestput();
                 String payload = "{\"androidID\":\""+ jsonObject.getString("androidID") +"\",\"username\":\""+ jsonObject.getString("username")+"\",\"nachname\":\""+ jsonObject.getString("nachname")+"\",\"vorname\":\""+ jsonObject.getString("vorname") +"\",\"telefonnummer\":\""+ jsonObject.getString("telefonnummer")+"\",\"status\":\""+jsonObject.getString("status")+"\",\"fcmID\":\""+jsonObject.getString("fcmID")+"\"}";
 
-                putUserdata.execute("http://5.199.129.74:81/user/"+ jsonObject.getString("username"), payload);
+                putUserdata.execute(hostUrl+"/user/"+ jsonObject.getString("username"), payload);
 
             }catch(JSONException e){
                 Toast.makeText(getApplicationContext(),"Fehler!",Toast.LENGTH_SHORT).show();

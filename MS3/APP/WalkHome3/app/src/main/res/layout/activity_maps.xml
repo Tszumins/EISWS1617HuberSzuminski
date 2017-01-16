@@ -204,10 +204,52 @@
             android:textColorLink="#4eb9ff"
             android:backgroundTint="#4eb9ff" />
 
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="0px"
+            android:layout_height="match_parent"
+            android:layout_weight="0.1">
+
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="0px"
+                android:layout_weight="0.35"/>
+
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="0px"
+                android:layout_weight="0.3">
+
+                <Space
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0.3" />
+
+                <Button
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/buttonAbbrechen"
+                    android:layout_weight="0.4"
+                    android:background="@drawable/ic_abbruch"
+                    android:visibility="invisible" />
+
+                <Space
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0.3" />
+            </LinearLayout>
+
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="0px"
+                android:layout_weight="0.35" />
+        </LinearLayout>
+
         <Space
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="0.2" />
+            android:layout_weight="0.1" />
     </LinearLayout>
 
     <LinearLayout
@@ -233,52 +275,11 @@
             android:elevation="15dp"
             android:textColor="#222222" />
 
-        <LinearLayout
-            android:orientation="vertical"
-            android:layout_width="0px"
-            android:layout_height="match_parent"
-            android:layout_weight="0.2">
-
-            <Space
-                android:layout_width="match_parent"
-                android:layout_height="0px"
-                android:layout_weight="0.3"/>
-
-            <LinearLayout
-                android:orientation="horizontal"
-                android:layout_width="match_parent"
-                android:layout_height="0px"
-                android:layout_weight="0.4">
-
-                <Space
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="0.3" />
-
-                <Button
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/buttonAbbrechen"
-                    android:layout_weight="0.4"
-                    android:background="@drawable/ic_abbruch"
-                    android:visibility="invisible" />
-
-                <Space
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="0.3" />
-            </LinearLayout>
-
-            <Space
-                android:layout_width="match_parent"
-                android:layout_height="0px"
-                android:layout_weight="0.3" />
-        </LinearLayout>
 
         <Space
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="0.2" />
+            android:layout_weight="0.4" />
     </LinearLayout>
 
     <Button

@@ -13,14 +13,17 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.provider.Settings;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.view.ContextThemeWrapper;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.Space;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import org.json.JSONArray;
@@ -42,12 +45,16 @@ import okhttp3.Response;
 
 public class Contacts extends Activity {
     Button btnZurueck;
+    Button btnAktualisieren;
     private ArrayList<Button> contactBuuttons;
     private ArrayList<Button> deleteContactButtons;
     private ArrayList<Button> userButtons;
+    private ArrayList<Button> infoButtons;
     private ArrayList<LinearLayout> userLayouts;
+    private ArrayList<LinearLayout> userSearchLayouts;
     private ArrayList<Space> spaces;
     LocationService lS;
+    TextView tVHeader;
     Boolean isBound = false;
     EditText sUser;
     LinearLayout rl;
@@ -58,6 +65,8 @@ public class Contacts extends Activity {
     public static final MediaType JSON
             = MediaType.parse("application/json; charset=utf-8");
 
+    final String hostUrl = "http://5.199.129.74:81";
+
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -65,9 +74,15 @@ public class Contacts extends Activity {
         btnZurueck = (Button) findViewById(R.id.buttonZurueck);
         contactBuuttons = new ArrayList<Button>();
         userButtons = new ArrayList<Button>();
+        infoButtons = new ArrayList<Button>();
         deleteContactButtons = new ArrayList<Button>();
         userLayouts = new ArrayList<LinearLayout>();
+        userSearchLayouts = new ArrayList<LinearLayout>();
         spaces = new ArrayList<Space>();
+        btnAktualisieren = (Button) findViewById(R.id.buttonRefresh);
+        tVHeader = (TextView) findViewById(R.id.headerKontakte);
+
+
 
         sUser = (EditText) findViewById(R.id.searchUser);
         rl = (LinearLayout)findViewById(R.id.userContainer);
@@ -79,6 +94,19 @@ public class Contacts extends Activity {
                 startActivity(intent);
             }
         });
+
+
+
+        btnAktualisieren.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                String androidID = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
+                HttpRestGet restg = new HttpRestGet();
+                restg.execute(hostUrl + "/userAID/" + androidID);
+            }
+        });
+
+
 
         TextWatcher fieldValidatorTextWatcher = new TextWatcher() {
             @Override
@@ -94,7 +122,7 @@ public class Contacts extends Activity {
                 rl.removeAllViews();
                 if(sUser.getText().toString().length()>0) {
                     HttpRestGetotherUsers getusers = new HttpRestGetotherUsers();
-                    getusers.execute("http://5.199.129.74:81/user");
+                    getusers.execute(hostUrl +"/user");
                 }
             }
         };
@@ -102,7 +130,7 @@ public class Contacts extends Activity {
 
         String androidID = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
         HttpRestGet restg = new HttpRestGet();
-        restg.execute("http://5.199.129.74:81/userAID/" + androidID);
+        restg.execute(hostUrl +"/userAID/" + androidID);
 
 
     }
@@ -163,6 +191,16 @@ public class Contacts extends Activity {
             userLayouts.add(new LinearLayout(this));
         }
     }
+    void createInfoButtons(int buttonCount){
+        for(int i=0; i<buttonCount;i++){
+            infoButtons.add(new Button(this));
+        }
+    }
+    void createSearchLayouts(int layoutCount){
+        for(int i=0; i<layoutCount;i++){
+            userSearchLayouts.add(new LinearLayout(this));
+        }
+    }
     void createSpaces(int spaceCount){
         for(int i=0; i<spaceCount;i++){
             spaces.add(new Space(this));
@@ -199,6 +237,16 @@ public class Contacts extends Activity {
             HttpRestGet2 restg2 = new HttpRestGet2();
             usernameFilter(res);
             restg2.execute(url + "/contact");
+
+            tVHeader.setText("Kontakte von: " + usernameSpeicher);
+            tVHeader.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    HttpRestGetoneUser getUser = new HttpRestGetoneUser();
+
+                    getUser.execute(hostUrl + "/user/" + usernameSpeicher);
+                }
+            });
         }
     }
 
@@ -255,6 +303,8 @@ public class Contacts extends Activity {
             }else {
                 try {
                     onpostex(res);
+
+
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -284,16 +334,16 @@ public class Contacts extends Activity {
                 JSONObject jsonContact = jsonContacts.getJSONObject(i);
                 final String username = jsonContact.getString("contactname");
                 final String akzeptiert = jsonContact.getString("akzeptiert");
+
                 contactBuuttons.get(i).getBackground().setColorFilter(Color.parseColor("#E88C0C"), PorterDuff.Mode.DARKEN);
                 contactBuuttons.get(i).setTextColor(Color.parseColor("#222222"));
-
                 contactBuuttons.get(i).setText(username);
 
                 if (akzeptiert.contains("nein")) {
                     contactBuuttons.get(i).setEnabled(false);
                     contactBuuttons.get(i).getBackground().setColorFilter(Color.parseColor("#BD720A"), PorterDuff.Mode.DARKEN);
                     HttpRestGet3 checkifContactaddedyou = new HttpRestGet3();
-                    checkifContactaddedyou.execute("http://5.199.129.74:81/user/"+username+"/contact/"+usernameSpeicher);
+                    checkifContactaddedyou.execute(hostUrl+ "/user/"+username+"/contact/"+usernameSpeicher);
                     contactBuuttons.get(i).setText(contactBuuttons.get(i).getText().toString() +" (noch nicht bestätigt)");
                 }
 
@@ -320,7 +370,7 @@ public class Contacts extends Activity {
                                     public void onClick(DialogInterface dialog, int which) {
 
                                         HttpRestDelete deleteContact = new HttpRestDelete();
-                                        deleteContact.execute("http://5.199.129.74:81/user/"+ usernameSpeicher + "/contact/" + username);
+                                        deleteContact.execute(hostUrl +"/user/"+ usernameSpeicher + "/contact/" + username);
 
                                     }
                                 })
@@ -354,7 +404,7 @@ public class Contacts extends Activity {
 
             }
         }catch (Exception e){
-            sUser.append(e.toString());
+           Toast.makeText(getApplicationContext(),"Fehler:" + e.toString(),Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -397,20 +447,37 @@ public class Contacts extends Activity {
         JSONArray jsonContacts = jsonData.getJSONArray("users");
 
         userButtons.clear();
+        infoButtons.clear();
+        userSearchLayouts.clear();
 
 
         createuserButtons(jsonContacts.length());
+        createInfoButtons(jsonContacts.length());
+        createSearchLayouts(jsonContacts.length());
 
 
         for (int i = 0; i < jsonContacts.length(); i++) {
-            JSONObject jsonContact = jsonContacts.getJSONObject(i);
+            final JSONObject jsonContact = jsonContacts.getJSONObject(i);
             final String username = jsonContact.getString("username");
+            final String url1 = jsonContact.getString("url");
 
 
             if(username.contains(sUser.getText().toString()) && !username.equals(usernameSpeicher) ){
-                userButtons.get(i).getBackground().setColorFilter(Color.parseColor("#4EB9FF"), PorterDuff.Mode.DARKEN);
-                userButtons.get(i).setTextColor(Color.parseColor("#222222"));
-                userButtons.get(i).setText(username);
+
+                infoButtons.get(i).getBackground().setColorFilter(Color.parseColor("#4EB9FF"), PorterDuff.Mode.DARKEN);
+                infoButtons.get(i).getBackground().setColorFilter(Color.parseColor("#4EB9FF"), PorterDuff.Mode.DARKEN);
+                infoButtons.get(i).setTextColor(Color.parseColor("#222222"));
+                infoButtons.get(i).setText(username);
+                infoButtons.get(i).setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        HttpRestGetoneUser getUser = new HttpRestGetoneUser();
+
+                        getUser.execute(url1);
+                    }
+                });
+
+                userButtons.get(i).setBackgroundResource(R.drawable.ic_hinzufuegen);
                 userButtons.get(i).setOnClickListener(new View.OnClickListener(){
 
                     @Override
@@ -419,7 +486,17 @@ public class Contacts extends Activity {
 
                     }
                 });
-                rl.addView(userButtons.get(i));
+                LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
+                LinearLayout.LayoutParams lpB = new LinearLayout.LayoutParams(0,150,0.15f);
+                LinearLayout.LayoutParams lpAdd = new LinearLayout.LayoutParams(0,150,0.85f);
+
+                userSearchLayouts.get(i).setLayoutParams(lp);
+                infoButtons.get(i).setLayoutParams(lpAdd);
+                userButtons.get(i).setLayoutParams(lpB);
+                userSearchLayouts.get(i).addView(userButtons.get(i));
+                userSearchLayouts.get(i).addView(infoButtons.get(i));
+
+                rl.addView(userSearchLayouts.get(i));
             }
 
         }
@@ -427,7 +504,7 @@ public class Contacts extends Activity {
 
     void userAdd(String username){
         HttpRestPost postuser = new HttpRestPost();
-        postuser.execute("http://5.199.129.74:81/user/"+usernameSpeicher+"/contact", "{\"contactname\":\""+ username +"\",\"akzeptiert\":\"nein\"}");
+        postuser.execute(hostUrl +"/user/"+usernameSpeicher+"/contact", "{\"contactname\":\""+ username +"\",\"akzeptiert\":\"nein\"}");
         sUser.setText("");
 
     }
@@ -468,7 +545,7 @@ public class Contacts extends Activity {
         HttpRestGet getfriends = new HttpRestGet();
             String androidID = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
 
-            getfriends.execute("http://5.199.129.74:81/userAID/" + androidID);
+            getfriends.execute(hostUrl+ "/userAID/" + androidID);
         }
     }
 
@@ -509,7 +586,7 @@ public class Contacts extends Activity {
 
             String androidID = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
             HttpRestGet restge = new HttpRestGet();
-            restge.execute("http://5.199.129.74:81/userAID/" + androidID);
+            restge.execute(hostUrl +"/userAID/" + androidID);
         }
     }
 
@@ -578,7 +655,7 @@ public class Contacts extends Activity {
             }
 
             HttpRestPut contactAendern = new HttpRestPut();
-            contactAendern.execute("http://5.199.129.74:81/user/"+usernameSpeicher+"/contact/"+contactname, "{\"contactname\":\""+ contactname +"\",\"akzeptiert\":\"ja\"}");
+            contactAendern.execute(hostUrl+ "/user/"+usernameSpeicher+"/contact/"+contactname, "{\"contactname\":\""+ contactname +"\",\"akzeptiert\":\"ja\"}");
         }
     }
 
@@ -625,7 +702,65 @@ public class Contacts extends Activity {
     void onpostPut(){
         String androidID = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
         HttpRestGet restg = new HttpRestGet();
-        restg.execute("http://5.199.129.74:81/userAID/" + androidID);
+        restg.execute(hostUrl +"/userAID/" + androidID);
+    }
+
+
+
+      /*-GET auf einen bestimmten Kontakt um die Kontaktdaten zu sehen)--------
+   * -----------------------------------------------------------------------------------------------------------*/
+
+    public class HttpRestGetoneUser  extends AsyncTask<String, Void, String> {
+        OkHttpClient client = new OkHttpClient();
+        String responsestring;
+
+        String run(String url) throws IOException {
+            Request request = new Request.Builder()
+                    .url(url)
+                    .build();
+
+            Response response = client.newCall(request).execute();
+            return response.body().string();
+        }
+
+        @Override
+        protected String doInBackground(String... params) {
+            try {
+                responsestring = run(params[0]);
+            } catch (Exception e) {
+                responsestring = e.toString();
+            }
+            return responsestring;
+        }
+
+        @Override
+        protected void onPostExecute(String res) {
+             String username1 = "";
+            String vorname1 ="";
+            String nachname1 = "";
+            String plz1 = "";
+            try {
+                JSONObject jsonObject = new JSONObject(res);
+                username1 = jsonObject.getString("username");
+                 vorname1 = jsonObject.getString("vorname");
+                nachname1 = jsonObject.getString("nachname");
+                plz1 = jsonObject.getString("currentPLZ");
+            }catch (Exception e){
+                Toast.makeText(getApplicationContext(),"fehler"+e.toString(),Toast.LENGTH_SHORT).show();
+            }
+            AlertDialog alertDialog = new AlertDialog.Builder(new ContextThemeWrapper(getApplication(), R.style.dialog))
+                    .setTitle("User: "+username1)
+                    .setMessage("Vorname: "+ vorname1 +"\nNachname:" + nachname1 + "\nPostleitzahl:" + plz1)
+                    .setNegativeButton("Abbruch", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+
+                        }
+                    }).create();
+
+            alertDialog.getWindow().setType(WindowManager.LayoutParams.TYPE_SYSTEM_ERROR);
+            alertDialog.show();
+
+        }
     }
 
 }

@@ -22,10 +22,10 @@
             android:textColor="@color/cast_expanded_controller_text_color" />
 
         <TextView
-            android:text="Einstellungen"
+            android:text="Kontakte von:"
             android:layout_width="match_parent"
             android:layout_height="40dp"
-            android:id="@+id/headerEinstellungen"
+            android:id="@+id/headerKontakte"
             android:textSize="22sp"
             android:textAlignment="center"
             android:elevation="24dp"
@@ -77,11 +77,18 @@
         android:layout_weight="0.5"
         >
 
-        <TextView
-            android:text="Vorhandene Kontakte"
+
+        <LinearLayout
+            android:orientation="horizontal"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="0.2"
+            android:background="#dddddd">
+        <TextView
+            android:text="Vorhandene Kontakte"
+            android:layout_width="0px"
+            android:layout_height="match_parent"
+            android:layout_weight="0.9"
             android:id="@+id/textView3"
             android:textSize="22sp"
             android:textAlignment="center"
@@ -89,6 +96,15 @@
             android:elevation="24dp"
             android:textColor="#222222"
             android:textStyle="normal|bold" />
+
+            <Button
+                android:layout_width="0px"
+                android:layout_height="match_parent"
+                android:layout_weight="0.1"
+                android:id="@+id/buttonRefresh"
+                android:background="@drawable/ic_refresh"></Button>
+
+            </LinearLayout>
 
         <ScrollView
             xmlns:android="http://schemas.android.com/apk/res/android"

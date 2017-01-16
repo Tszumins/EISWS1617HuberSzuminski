@@ -117,7 +117,7 @@
             <EditText
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="textPersonName"
+                android:inputType="text"
                 android:ems="10"
                 android:id="@+id/editText_telefon"
                 android:hint="In Form: 01XXXXXXXXX" />

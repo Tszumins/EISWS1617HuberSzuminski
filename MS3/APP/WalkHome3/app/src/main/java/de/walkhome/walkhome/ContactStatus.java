@@ -65,6 +65,8 @@ public class ContactStatus extends FragmentActivity implements OnMapReadyCallbac
     Button notrufAbsenden;
     String Telefonnummmer;
 
+    final String hostUrl = "http://5.199.129.74:81";
+
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -221,7 +223,7 @@ public class ContactStatus extends FragmentActivity implements OnMapReadyCallbac
     void getContactData(){
         HttpRestGetUserdata userdataGet = new HttpRestGetUserdata();
 
-        userdataGet.execute("http://5.199.129.74:81/user/"+lS.contactName+"/alarm");
+        userdataGet.execute(hostUrl+"/user/"+lS.contactName+"/alarm");
     }
 
     public class HttpRestGetUserdata  extends AsyncTask<String, Void, String> {

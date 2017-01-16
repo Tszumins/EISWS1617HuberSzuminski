@@ -40,6 +40,7 @@ public class Registrieren extends Activity {
     EditText edt_telefon;
     String usernameSpeicher;
     String fcmToken;
+    final String hostUrl = "http://5.199.129.74:81";
 
 
     public static final MediaType JSON
@@ -75,14 +76,7 @@ public class Registrieren extends Activity {
 
                     onClickreg();
 
-                /*if(istNummer){
 
-                    String androidID = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
-                    HttpRestPost restp = new HttpRestPost();
-                    restp.execute("http://5.199.129.74:81/userAID/" + androidID,"{\"androidID\":\""+ androidID +"\",\"username\":\""+ edt_username.getText().toString() +"\"", "post");
-                }else{
-                    edt_vorname.append("blabalbalablabla");
-                }*/
                 }
             });
         }catch(Exception e){
@@ -95,7 +89,7 @@ public class Registrieren extends Activity {
         Boolean istNummer = false;
         String text = edt_telefon.getText().toString();
         try {
-            int num = Integer.parseInt(text);
+            long num = Long.parseLong(text);
             istNummer = true;
         } catch (NumberFormatException e) {
             istNummer = false;
@@ -108,9 +102,7 @@ public class Registrieren extends Activity {
             usernameSpeicher = edt_username.getText().toString();
 
 
-
-
-            restp.execute("http://5.199.129.74:81/user", "{\"androidID\":\""+ androidID +"\",\"username\":\""+ edt_username.getText().toString()+"\",\"nachname\":\""+ edt_name.getText().toString()+"\",\"vorname\":\""+ edt_vorname.getText().toString() +"\",\"telefonnummer\":\""+ edt_telefon.getText().toString()+"\",\"status\":\"zuHause\",\"fcmID\":\""+ fcmToken + "\"}","post");
+            restp.execute(hostUrl +"/user", "{\"androidID\":\""+ androidID +"\",\"username\":\""+ edt_username.getText().toString()+"\",\"nachname\":\""+ edt_name.getText().toString()+"\",\"vorname\":\""+ edt_vorname.getText().toString() +"\",\"telefonnummer\":\""+ edt_telefon.getText().toString()+"\",\"status\":\"zuHause\",\"fcmID\":\""+ fcmToken + "\"}","post");
 
             btn_registration.setEnabled(false);
 
@@ -190,7 +182,7 @@ public class Registrieren extends Activity {
     void onpostex (){
         String androidID = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
         HttpRestPost2 restp2 = new HttpRestPost2();
-        restp2.execute("http://5.199.129.74:81/userAID" , "{\"androidID\":\""+ androidID +"\",\"username\":\""+ edt_username.getText().toString() + "\"}", "post");
+        restp2.execute(hostUrl+"/userAID" , "{\"androidID\":\""+ androidID +"\",\"username\":\""+ edt_username.getText().toString() + "\"}", "post");
     }
 
 
@@ -240,7 +232,7 @@ public class Registrieren extends Activity {
             zeit.setToNow();
 
             HttpRestPostAlarm alarmpost = new HttpRestPostAlarm();
-            alarmpost.execute("http://5.199.129.74:81/user/"+usernameSpeicher+"/alarm", "{\"time\":\""+zeit.format("%H:%M").toString()+"\"}");
+            alarmpost.execute(hostUrl+"/user/"+usernameSpeicher+"/alarm", "{\"time\":\""+zeit.format("%H:%M").toString()+"\"}");
 
             Toast.makeText(getApplicationContext(), "Registrierung Erfolgreich!", Toast.LENGTH_SHORT).show();
             Intent intent = new Intent(getApplicationContext(), MapsActivity.class);
