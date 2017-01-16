@@ -4,6 +4,11 @@ var jsonParser = bodyParser.json();
 var app = express();
 var paperwork = require('paperwork');
 var geocoder = require('geocoder');
+var FCM = require('fcm-push');
+
+var serverKey = 'AAAAgSytKjI:APA91bF3EoANk_csTp9NUvqPJDNFSd81ARrGDTddg6_GbEbP9uyyO5aJYKDYb1tjQFpzKoOpp6fmUUB0c82GTJ0IsrR6alF6QzV0KCV209KIQP7-BgyntYDVE9e6WZGaBH87iBdrGi42';
+var fcm = new FCM(serverKey);
+var url = "http://5.199.129.74:81";
 
 
 var jsonuseraccept = {
@@ -91,7 +96,9 @@ app.get('/user', jsonParser, function (req, res) {
             client.mget(rep, function (err, rep) {
                 rep.forEach(function (val) {
                     if (val != null) {
-                        users.push(JSON.parse(val));
+                        var userD = JSON.parse(val);
+                        userD.url = url + "/user/" + userD.username;
+                        users.push(userD);
                     }
                 });
                 var user = {
@@ -219,10 +226,16 @@ app.post('/user/:USERNAME/contact', jsonParser, paperwork.accept(jsoncontactsacc
         if (rep == 1) {
             res.status(400).json("Der User ist schon dein Freund!");
         } else {
+            client.get("user:" + newContact.contactname, function(err, rep){
+                var userData = JSON.parse(rep);
+                
+                newContact.fcmID = userData.fcmID;
+            
             client.set(datasetKey, JSON.stringify(newContact), function (err, rep) { //user in Datenbank speichern
 
                 res.status(200).json(newContact);
-            })
+            });
+            });
         }
     });
 });
@@ -234,11 +247,14 @@ app.put('/user/:USERNAME/contact/:CONTACTNAME', jsonParser, paperwork.accept(jso
     client.exists(datasetKey, function (err, rep) {
 
         if (rep == 1) {
-
+              client.get("user:" + req.params.CONTACTNAME, function(err, rep){
+                var userData = JSON.parse(rep);
+               newData.fcmID = userData.fcmID;
             client.set(datasetKey, JSON.stringify(newData), function (err, rep) {
-
+                
                 res.status(200).json("Kontaktdaten wurden geändert!");
             });
+              });
         } else {
             res.status(404).json('Der User ist nicht dein Kontakt!');
         }
@@ -253,7 +269,7 @@ app.get('/user/:USERNAME/contact/:CONTACTNAME', jsonParser, function (req, res) 
 
         if (rep) {
             var newData = JSON.parse(rep);
-            newData.url = "http://5.199.129.74:81/user/" + req.params.USERNAME + "/contact/" + req.params.CONTACTNAME;
+            newData.url = url + "/user/" + req.params.USERNAME + "/contact/" + req.params.CONTACTNAME;
 
             var user = {
                 newData
@@ -276,7 +292,9 @@ app.get('/user/:USERNAME/contact', jsonParser, function (req, res) {
             client.mget(rep, function (err, rep) {
                 rep.forEach(function (val) {
                     if (val != null) {
-                        users.push(JSON.parse(val));
+                        var user1 = JSON.parse(val);
+                        user1.url = url + "/user/" + user1.contactname;
+                        users.push(user1);
                     }
                 });
                 var user = {
@@ -321,10 +339,10 @@ app.post('/user/:USERNAME/alarm', jsonParser, paperwork.accept(jsonuseralarmacce
         if (rep == 1) {
             res.status(400).json("Der User hat den Alarm schon ausgelöst!");
         } else {
-            client.set(datasetKey, JSON.stringify(newAlarm), function (err, rep) { //user in Datenbank speichern
-
-                res.status(200).json(newAlarm);
-            })
+            client.set(datasetKey, JSON.stringify(newAlarm), function (err, rep) { //alarm in Datenbank speichern
+                
+            res.status(200).json(newAlarm);
+            });
         }
     });
 });
@@ -341,7 +359,105 @@ app.put('/user/:USERNAME/alarm', jsonParser, paperwork.accept(jsonuseralarmaccep
             var olddata = JSON.parse(data);
             if(newData.status == null){
                 newData.status = olddata.status;
+                
             }
+            if(olddata.status != newData.status && newData.status != null){
+               client.keys('c:' + req.params.USERNAME + 'contact:*', function (err, rep) {
+
+                   if (rep.length == 0) {
+                      
+                       return;
+                   } else {
+                
+                       client.mget(rep, function (err, rep) {
+                    rep.forEach(function (val) {
+                    if (val != null) {
+
+                        var currentUser = JSON.parse(val);
+                       if(currentUser.username != req.params.USERNAME){
+                        var message = {
+                                                to: currentUser.fcmID, 
+                                                collapse_key: 'WalkHome', 
+                                                data: {
+                                                    userName: req.params.USERNAME,
+                                                    status: newData.status
+                                                },
+                                                notification: {
+                                                    title: 'WalkHome',
+                                                    body: 'Ein Kontakt hat seinen Status geändert!'
+                                                }
+                                            };
+
+                                            //callback style
+                                            fcm.send(message, function(err, response){
+                                                if (err) {
+                                                    console.log("Something has gone wrong!");
+                                                } else {-
+                                                    console.log("Successfully sent with response: ", response);
+                                                }
+                                            });
+                        }
+                    }
+                });
+                
+            });
+                       
+                       
+        }
+    });
+               
+             if(newData.status == "Alarm ausgelöst"){
+                 console.log("alarm ausgelst");
+                 client.get('user:'+ req.params.USERNAME, function(err,rep){
+                     var userDat = JSON.parse(rep);
+                     
+                 client.keys('placeuser:' + userDat.currentPLZ + 'user:*', function (err, rep) {
+
+                   if (rep.length == 0) {
+                       
+                       return;
+                   } else {
+                
+                       client.mget(rep, function (err, rep) {
+                    rep.forEach(function (val) {
+                    if (val != null) {
+
+                        var currentUser = JSON.parse(val);
+                        var message = {
+                                                to: currentUser.fcmID, 
+                                                collapse_key: 'WalkHome', 
+                                                data: {
+                                                    userName: req.params.USERNAME,
+                                                    status: newData.status
+                                                },
+                                                notification: {
+                                                    title: 'WalkHome Meldung',
+                                                    body: 'Ein Kontakt in der Umgebung hat einen Alarm gemeldet!'
+                                                }
+                                            };
+
+                                            //callback style
+                                            fcm.send(message, function(err, response){
+                                                if (err) {
+                                                    console.log("Something has gone wrong!");
+                                                } else {-
+                                                    console.log("Successfully sent with response: ", response);
+                                                }
+                                            });
+                        
+                                    }   
+                            });
+                
+                        })
+                       
+                    }
+                 })
+                 })
+             }
+                
+                
+            }
+                
             newData.username = req.params.USERNAME;
 
             client.set(datasetKey, JSON.stringify(newData), function (err, rep) {
@@ -356,15 +472,20 @@ app.put('/user/:USERNAME/alarm', jsonParser, paperwork.accept(jsonuseralarmaccep
 
 app.get('/user/:USERNAME/alarm', jsonParser, function (req, res) {
     var datasetKey = 'u:' + req.params.USERNAME + 'alarm:';
-
-    client.get(datasetKey, function (err, rep) {
-
+    
+    client.get('user:'+req.params.USERNAME, function(err,rep){
+        var userData = JSON.parse(rep);
+        
+     client.get(datasetKey, function (err, rep2) {
+         var returnData = JSON.parse(rep2);
+         returnData.telefonnummer = userData.telefonnummer;
         if (rep) {
-            res.status(200).type('json').send(rep); //liegt schon in Json vor
+            res.status(200).json(returnData); //liegt schon in Json vor
         } else {
             res.status(404).type('text').send('Der User hat keinen Alarm ausgelöst!');
         }
     });
+        });
 });
 
 
@@ -405,7 +526,7 @@ app.post('/userAID', jsonParser, paperwork.accept(jsonuserAIDaccept), function (
         if (rep == 1) {
             client.get(datasetKey, function (err, rep) {
                 var datajson = JSON.parse(rep);
-                var responeURL = "http://5.199.129.74:81/user/" + datajson.username;
+                var responeURL = url+"/user/" + datajson.username;
 
                 res.status(400).json({
                     "status": 400,
@@ -431,7 +552,7 @@ app.put('/userAID/:AID', jsonParser, paperwork.accept(jsonuserAIDaccept), functi
         if (rep == 1) {
 
             client.set(datasetKey, JSON.stringify(newData), function (err, rep) {
-                var responseURL = "http://5.199.129.74:81/user/" + newData.username;
+                var responseURL = url+"/user/" + newData.username;
                 res.status(200).json({
                     "status": 200,
                     "url": responseURL
@@ -451,8 +572,8 @@ app.get('/userAID/:AID', jsonParser, function (req, res) {
 
         if (rep) {
             var userdata = JSON.parse(rep);
-            var url = "http://5.199.129.74:81/user/" + userdata.username;
-            res.status(200).json(url); //liegt schon in Json vor
+            var url1 = url+"/user/" + userdata.username;
+            res.status(200).json(url1); //liegt schon in Json vor
         } else {
             res.status(404).type('text').send('Das Smartphone wurde noch nicht registriert!');
         }
