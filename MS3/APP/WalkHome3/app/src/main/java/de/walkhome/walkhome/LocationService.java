@@ -8,6 +8,7 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationManager;
+import android.media.AudioManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
@@ -54,7 +55,8 @@ public class LocationService extends Service  {
     public static final String MyPREFERENCES = "WalkHomeSettings";
     public static final String headphoneEnable = "headphoneEnable";
     public static final String routeTolerance = "routeTolerance";
-    public static final String peopleAround = "peopleAround";
+
+
 
     Location lLocation;
     Location oldLocation;
@@ -131,6 +133,7 @@ public class LocationService extends Service  {
         initializeLocationManager();
 
         final SharedPreferences sharedPreferences = getSharedPreferences(MyPREFERENCES, Context.MODE_PRIVATE);
+        final SharedPreferences.Editor editor = sharedPreferences.edit();
 
 
         try {
@@ -171,11 +174,97 @@ public class LocationService extends Service  {
 
             @Override
             public void run() {
+                AudioManager scanHeadphoneJack = (AudioManager)getSystemService(Context.AUDIO_SERVICE);
+                if(sharedPreferences.getBoolean(headphoneEnable, true) == true) {
+
+                    if(scanHeadphoneJack.isWiredHeadsetOn() == false){
+
+                        editor.putBoolean(headphoneEnable, false);
+                        editor.commit();
+                        //Vibrations Alarm Starten
+                        vibrationNotification = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+                        long[] pattern = {0, 800, 600};
+                        vibrationNotification.vibrate(pattern, 0);
+                        AlertDialog alertDialog = new AlertDialog.Builder(new ContextThemeWrapper(getApplication(), R.style.dialog))
+                                .setTitle("WalkHome")
+                                .setCancelable(false)
+                                .setMessage("Ist alles in Ordnung?")
+                                .setPositiveButton("Ja", new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        vibrationNotification.cancel();
+                                        counterSameDistance = 6;
+                                    }
+                                })
+                                .setNegativeButton("Nein", new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        //ERNEUTE NACHFRAGE
+                                        vibrationNotification.cancel();
+                                        AlertDialog alertDialog = new AlertDialog.Builder(new ContextThemeWrapper(getApplication(), R.style.dialog))
+                                                .setTitle("WalkHome")
+                                                .setCancelable(false)
+                                                .setMessage("Wollen Sie den Alarm wirklich absenden?")
+                                                .setNegativeButton("Nein!", new DialogInterface.OnClickListener() {
+                                                    public void onClick(DialogInterface dialog, int which) {
+                                                        counterSameDistance = 6;
+                                                    }
+                                                })
+                                                .setPositiveButton("Ja!", new DialogInterface.OnClickListener() {
+                                                    public void onClick(DialogInterface dialog, int which) {
+
+                                                        ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+                                                        if (connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE).getState() == NetworkInfo.State.CONNECTED ||
+                                                                connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI).getState() == NetworkInfo.State.CONNECTED) {
+
+                                                            //ALARM SENDEN
+                                                            Time zeit = new Time();
+                                                            zeit.setToNow();
+                                                            HttpRestPut putlocation = new HttpRestPut();
+                                                            putlocation.execute(hostUrl+ "/user/" + userName + "/alarm", "{\"time\":\"" + zeit.format("%H:%M").toString() + "\",\"latitude\":" + lLocation.getLatitude() + ",\"longitude\":" + lLocation.getLongitude() + ",\"status\":\"Alarm ausgelöst\"}");
+                                                            //ANZEIGEN DASS DER ALARM AUSGELÖST WURDE!!!!!!!!!!!!
+                                                            AlertDialog alertDialog = new AlertDialog.Builder(new ContextThemeWrapper(getApplication(), R.style.dialog))
+                                                                    .setTitle("WalkHome")
+                                                                    .setCancelable(false)
+                                                                    .setMessage("Alarm wurde ausgelöst! Wollen Sie den Alarm zurücknehmen?")
+                                                                    .setPositiveButton("Ja!", new DialogInterface.OnClickListener() {
+                                                                        public void onClick(DialogInterface dialog, int which) {
+                                                                            //ALARM ZURÜCKNEHMEN
+
+                                                                            Time zeit = new Time();
+                                                                            zeit.setToNow();
+                                                                            HttpRestPut putlocation = new HttpRestPut();
+                                                                            putlocation.execute(hostUrl +"/user/" + userName + "/alarm", "{\"time\":\"" + zeit.format("%H:%M").toString() + "\",\"latitude\":" + lLocation.getLatitude() + ",\"longitude\":" + lLocation.getLongitude() + ",\"status\":\"Alarm zurückgenommen\"}");
+                                                                            counterSameDistance = 6;
+                                                                        }
+                                                                    })
+                                                                    .create();
+
+                                                            alertDialog.getWindow().setType(WindowManager.LayoutParams.TYPE_SYSTEM_ERROR);
+                                                            alertDialog.show();
+                                                        }
+                                                        else{
+                                                            //Notruf waehlen
+                                                            startActivity( new Intent(Intent.ACTION_DIAL, Uri.parse("tel:112")));
+                                                        }
+                                                    }
+                                                })
+                                                .create();
+
+                                        alertDialog.getWindow().setType(WindowManager.LayoutParams.TYPE_SYSTEM_ERROR);
+                                        alertDialog.show();
+                                    }
+                                })
+                                .create();
+
+                        alertDialog.getWindow().setType(WindowManager.LayoutParams.TYPE_SYSTEM_ERROR);
+                        alertDialog.show();
+                    }
+                }
 
                 if(lLocation != null && userName != null) {
                     if (oldLocation == null) {
                         oldLocation = lLocation;
                     }
+
                     if(sharedPreferences.getBoolean(routeTolerance, true) == true) {
                         locationCheck();
                     }

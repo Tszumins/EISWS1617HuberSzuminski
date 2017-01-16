@@ -5,11 +5,11 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.media.AudioManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.support.v7.app.AlertDialog;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CompoundButton;
@@ -60,7 +60,7 @@ public class UserSettings extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
 
-        Switch swHeadphone = (Switch)findViewById(R.id.sw_Headphone);
+        final Switch swHeadphone = (Switch)findViewById(R.id.sw_Headphone);
         Switch swRouteTolerance = (Switch)findViewById(R.id.sw_RouteTolerance);
         Switch swPeopleAround = (Switch)findViewById(R.id.sw_PeopleAround);
         datenAktualisieren = (Button) findViewById(R.id.bt_changeUserData);
@@ -119,9 +119,19 @@ public class UserSettings extends Activity {
         //Wenn der Schalter geändert wird werden die Änderungen auch in den SharedPrefs geändert.
         swHeadphone.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                AudioManager scanHeadphoneJack = (AudioManager)getSystemService(Context.AUDIO_SERVICE);
+
                 if (isChecked) {
-                    editor.putBoolean(headphoneEnable, true);
-                    editor.commit();
+                    if (scanHeadphoneJack.isWiredHeadsetOn() == true) {
+                        editor.putBoolean(headphoneEnable, true);
+                        editor.commit();
+                    }
+                    else{
+                        editor.putBoolean(headphoneEnable, false);
+                        editor.commit();
+                        swHeadphone.setChecked(false);
+                    }
+
                 } else {
                     editor.putBoolean(headphoneEnable, false);
                     editor.commit();
