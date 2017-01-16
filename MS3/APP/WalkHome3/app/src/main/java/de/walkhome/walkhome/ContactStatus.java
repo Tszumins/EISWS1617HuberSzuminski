@@ -1,14 +1,12 @@
 package de.walkhome.walkhome;
 
-import android.app.Activity;
-import android.app.Fragment;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
-import android.graphics.Color;
 import android.location.Location;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -36,13 +34,11 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.maps.model.PolylineOptions;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.util.ArrayList;
 
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -66,6 +62,8 @@ public class ContactStatus extends FragmentActivity implements OnMapReadyCallbac
     Button btnZurueck;
     Button btnKontaktAnruf;
     Marker contactPosition;
+    Button notrufAbsenden;
+    String Telefonnummmer;
 
 
     protected void onCreate(Bundle savedInstanceState) {
@@ -78,6 +76,25 @@ public class ContactStatus extends FragmentActivity implements OnMapReadyCallbac
         btnZurueck = (Button) findViewById(R.id.buttonZurueck);
         btnKontaktAnruf = (Button) findViewById(R.id.btnContactCall);
         statusTextView = (TextView) findViewById(R.id.textViewStatus);
+        notrufAbsenden = (Button) findViewById(R.id.btn_notruf);
+
+
+        btnKontaktAnruf.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v){
+                //Notruf waehlen
+
+                startActivity( new Intent(Intent.ACTION_DIAL, Uri.parse("tel:"+ Telefonnummmer)));
+            }
+        });
+
+        notrufAbsenden.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v){
+                //Notruf waehlen
+                startActivity( new Intent(Intent.ACTION_DIAL, Uri.parse("tel:112")));
+            }
+        });
 
         btnZurueck.setOnClickListener(new View.OnClickListener(){
             @Override
@@ -153,7 +170,7 @@ public class ContactStatus extends FragmentActivity implements OnMapReadyCallbac
             public void run() {
 
                 getContactData();
-                ha.postDelayed(this, 30000);
+                ha.postDelayed(this, 10000);
             }
         },10);
 
@@ -243,6 +260,7 @@ public class ContactStatus extends FragmentActivity implements OnMapReadyCallbac
             String status = jsonObject.getString("status");
             double lat = jsonObject.getDouble("latitude");
             double lon = jsonObject.getDouble("longitude");
+            Telefonnummmer = jsonObject.getString("telefonnummer");
         if(status == "null"){
             statusTextView.setText("");
             statusTextView.setText("Kein Status vorhanden!" + time);

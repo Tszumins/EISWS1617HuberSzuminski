@@ -1,11 +1,16 @@
 package de.walkhome.walkhome;
 
 import android.app.Activity;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.support.v4.content.LocalBroadcastManager;
 import android.text.format.Time;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -18,6 +23,8 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+
+import static com.google.android.gms.wearable.DataMap.TAG;
 
 /**
  * Created by yannikhuber on 09.01.17.
@@ -32,6 +39,8 @@ public class Registrieren extends Activity {
     EditText edt_username;
     EditText edt_telefon;
     String usernameSpeicher;
+    String fcmToken;
+
 
     public static final MediaType JSON
             = MediaType.parse("application/json; charset=utf-8");
@@ -48,6 +57,9 @@ public class Registrieren extends Activity {
             edt_name = (EditText) findViewById(R.id.editText_name);
             edt_telefon = (EditText) findViewById(R.id.editText_telefon);
             edt_username = (EditText) findViewById(R.id.editText_username);
+
+            LocalBroadcastManager.getInstance(this).registerReceiver(tokenReceiver, new IntentFilter("tokenReceiver"));
+
 
             btn_zurueck.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -74,7 +86,7 @@ public class Registrieren extends Activity {
                 }
             });
         }catch(Exception e){
-            edt_username.append(e.toString());
+            Toast.makeText(getApplicationContext(),"Fehler!"+ e.toString(),Toast.LENGTH_SHORT).show();
         }
 
     }
@@ -95,9 +107,7 @@ public class Registrieren extends Activity {
             HttpRestPost restp = new HttpRestPost();
             usernameSpeicher = edt_username.getText().toString();
 
-            //FCM ID aus der Klasse holen
-            MyFirebaseInstanceIDService getFCMToken = new MyFirebaseInstanceIDService();
-            String fcmToken = getFCMToken.shareToken;
+
 
 
             restp.execute("http://5.199.129.74:81/user", "{\"androidID\":\""+ androidID +"\",\"username\":\""+ edt_username.getText().toString()+"\",\"nachname\":\""+ edt_name.getText().toString()+"\",\"vorname\":\""+ edt_vorname.getText().toString() +"\",\"telefonnummer\":\""+ edt_telefon.getText().toString()+"\",\"status\":\"zuHause\",\"fcmID\":\""+ fcmToken + "\"}","post");
@@ -111,6 +121,20 @@ public class Registrieren extends Activity {
             btn_registration.setEnabled(true);
         }
     }
+
+    BroadcastReceiver tokenReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String token = intent.getStringExtra("token");
+            if(token != null){
+                fcmToken = token;
+                Log.e(TAG, "Token empfangen: " + fcmToken);
+            }
+            else{
+
+            }
+        }
+    };
 
 
     public class HttpRestPost  extends AsyncTask<String, Void, String> {
@@ -258,5 +282,7 @@ public class Registrieren extends Activity {
 
         }
     }
+
+
 
 }

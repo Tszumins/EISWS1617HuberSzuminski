@@ -27,7 +27,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
     LocationService lS;
     Boolean isBound = false;
-    String contactName;
+    String contactName, alarmStatus;
 
     private static final String TAG = "MyFirebaseMsgService";
 
@@ -64,6 +64,14 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         } catch (JSONException e) {
             e.printStackTrace();
         }
+
+        try {
+            alarmStatus = fcmData.getString("status");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+
 
         //Usernamen setzen
         lS.contactName = contactName;

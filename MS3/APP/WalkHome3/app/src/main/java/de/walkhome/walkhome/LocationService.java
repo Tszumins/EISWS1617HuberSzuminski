@@ -48,6 +48,7 @@ public class LocationService extends Service  {
     public String contactName;
     public String userName;
     Vibrator vibrationNotification;
+    public String fcmID;
 
     Location lLocation;
     public static final MediaType JSON

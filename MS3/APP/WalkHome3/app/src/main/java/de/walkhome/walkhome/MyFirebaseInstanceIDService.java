@@ -1,9 +1,12 @@
+
 package de.walkhome.walkhome;
 
 /**
  * Created by tobiasszuminski on 13.01.17.
  */
 
+import android.content.Intent;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 import com.google.firebase.iid.FirebaseInstanceId;
@@ -12,7 +15,7 @@ import com.google.firebase.iid.FirebaseInstanceIdService;
 
 public class MyFirebaseInstanceIDService extends FirebaseInstanceIdService {
 
-    public String shareToken;
+
 
     private static final String TAG = "MyFirebaseIIDService";
 
@@ -22,7 +25,14 @@ public class MyFirebaseInstanceIDService extends FirebaseInstanceIdService {
         // Get updated InstanceID token.
         String refreshedToken = FirebaseInstanceId.getInstance().getToken();
 
-        shareToken = refreshedToken;
+
+        final Intent intent = new Intent("tokenReceiver");
+        final LocalBroadcastManager broadcastManager = LocalBroadcastManager.getInstance(this);
+
+        intent.putExtra("token", refreshedToken);
+        broadcastManager.sendBroadcast(intent);
+
+
 
         sendRegistrationToServer(refreshedToken);
     }
